@@ -1,0 +1,16 @@
+{
+	"name": "io.chainsafe.open-creator-rails",
+	"displayName":"Open Creator Rails Unity",
+	"version": "0.1.0",
+	"unity": "6000.3",
+	"unityRelease": "8f1",
+	"description": "",
+	"dependencies": {
+		"com.unity.test-framework": "1.6.0"
+	},
+	"author": {
+		"name": "ChainSafe",
+		"url": "https://chainsafe.io/"
+	},
+	"licensesUrl": "https://mit-license.org/"
+}
