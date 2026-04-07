@@ -1,13 +1,18 @@
 {
   "dependencies": {
-    "com.boxqkrtm.ide.cursor": {
-      "version": "https://github.com/boxqkrtm/com.unity.ide.cursor.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {
-        "com.unity.test-framework": "1.1.9"
-      },
-      "hash": "fd8ff1fb700caf062eb5cce364c1d0a85f99ebe6"
+    "com.cysharp.unitask": {
+      "version": "2.5.10",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://package.openupm.com"
+    },
+    "com.nethereum.unity": {
+      "version": "6.1.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://package.openupm.com"
     },
     "com.unity.ai.navigation": {
       "version": "2.0.10",
@@ -99,6 +104,13 @@
     "com.unity.nuget.mono-cecil": {
       "version": "1.11.6",
       "depth": 3,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.nuget.newtonsoft-json": {
+      "version": "3.2.2",
+      "depth": 0,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -228,11 +240,14 @@
       "url": "https://packages.unity.com"
     },
     "io.chainsafe.open-creator-rails": {
-      "version": "file:/home/rowbell/Documents/ChainSafe/Code/Main/open-creator-rails.unity/io.chainsafe.open-creator-rails",
+      "version": "file:../../io.chainsafe.open-creator-rails",
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.unity.test-framework": "1.6.0"
+        "com.unity.test-framework": "1.6.0",
+        "com.cysharp.unitask": "2.5.10",
+        "com.nethereum.unity": "6.1.0",
+        "com.unity.nuget.newtonsoft-json": "3.2.2"
       }
     },
     "com.unity.modules.accessibility": {
