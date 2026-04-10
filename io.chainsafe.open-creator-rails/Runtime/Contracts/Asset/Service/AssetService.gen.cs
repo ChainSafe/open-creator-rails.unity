@@ -10,9 +10,9 @@ using Nethereum.Contracts.CQS;
 using Nethereum.Contracts.ContractHandlers;
 using Nethereum.Contracts;
 using System.Threading;
-using Io.ChainSafe.OpenCreatorRails.Asset.ContractDefinition;
+using Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition;
 
-namespace Io.ChainSafe.OpenCreatorRails.Asset.Service
+namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
 {
     public partial class AssetService: AssetServiceBase
     {

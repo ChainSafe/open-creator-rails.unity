@@ -9,7 +9,7 @@ using Nethereum.Contracts.CQS;
 using Nethereum.Contracts;
 using System.Threading;
 
-namespace Io.ChainSafe.OpenCreatorRails.Asset.ContractDefinition
+namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
 {
 
 

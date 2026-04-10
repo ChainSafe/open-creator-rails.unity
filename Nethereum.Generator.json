@@ -7,12 +7,12 @@
       "ABIFile":"open-creator-rails/apps/contracts/Asset.abi",
       "ByteCode":null,
       "BinFile":null,
-      "BaseNamespace":"Io.ChainSafe.OpenCreatorRails",
+      "BaseNamespace":"Io.ChainSafe.OpenCreatorRails.Contracts",
       "CQSNamespace":null,
       "DTONamespace":null,
       "ServiceNamespace":null,
       "CodeGenLanguage":"CSharp",
-      "BaseOutputPath":"io.chainsafe.open-creator-rails/Runtime"
+      "BaseOutputPath":"io.chainsafe.open-creator-rails/Runtime/Contracts"
     },
     {
       "ContractName":"AssetRegistry",
@@ -20,12 +20,12 @@
       "ABIFile":"open-creator-rails/apps/contracts/AssetRegistry.abi",
       "ByteCode":null,
       "BinFile":null,
-      "BaseNamespace":"Io.ChainSafe.OpenCreatorRails",
+      "BaseNamespace":"Io.ChainSafe.OpenCreatorRails.Contracts",
       "CQSNamespace":null,
       "DTONamespace":null,
       "ServiceNamespace":null,
       "CodeGenLanguage":"CSharp",
-      "BaseOutputPath":"io.chainsafe.open-creator-rails/Runtime"
+      "BaseOutputPath":"io.chainsafe.open-creator-rails/Runtime/Contracts"
     }
   ]
 }
