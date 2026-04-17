@@ -84,11 +84,11 @@ namespace Io.ChainSafe.OpenCreatorRails
             return assets;
         }
         
-        public Asset GetAsset(string id, int index = 0)
+        public Asset GetAsset(string assetId, int index = 0)
         {
             Asset[] assets = GetAssets(index);
 
-            return assets.First(a => a.Id == id.Keccack256());
+            return assets.First(a => a.AssetIdHash == assetId.Keccack256());
         }
 
         public async UniTask<DateTime> Subscribe(string assetId, string subscriberId, TimeSpan duration, int index = 0)
@@ -99,9 +99,9 @@ namespace Io.ChainSafe.OpenCreatorRails
             
             EthECDSASignature signature = WalletProvider.SignTypedData(permit, typedData);
 
-            byte[] subscriber = subscriberId.Keccack256Bytes();
+            byte[] subscriberHashBytes = subscriberId.Keccack256Bytes();
             
-            TransactionReceipt receipt = await asset.Service.SubscribeRequestAndWaitForReceiptAsync(subscriber, permit.Owner, permit.Spender, permit.Value, permit.Deadline, signature.V[0], signature.R, signature.S);
+            TransactionReceipt receipt = await asset.Service.SubscribeRequestAndWaitForReceiptAsync(subscriberHashBytes, permit.Owner, permit.Spender, permit.Value, permit.Deadline, signature.V[0], signature.R, signature.S);
 
             BigInteger? endTime = receipt.DecodeAllEvents<SubscriptionExtendedEventDTO>().FirstOrDefault()?.Event.EndTime ??
                                   receipt.DecodeAllEvents<SubscriptionAddedEventDTO>()[0].Event.EndTime;

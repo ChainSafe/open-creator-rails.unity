@@ -1,5 +1,7 @@
+using System;
 using Nethereum.Hex.HexConvertors.Extensions;
 using Nethereum.Util;
+using Newtonsoft.Json.Linq;
 
 namespace Io.ChainSafe.OpenCreatorRails.Utils
 {
@@ -15,6 +17,13 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
             string hash = Keccack256(value);
             
             return hash.HexToByteArray();
+        }
+        
+        public static DateTime FromUnixLongToDateTime(this JToken token)
+        {
+            long unixTime = token.Value<long>();
+
+            return DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime;
         }
     }
 }

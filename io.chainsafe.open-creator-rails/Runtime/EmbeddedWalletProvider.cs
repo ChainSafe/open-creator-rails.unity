@@ -1,3 +1,4 @@
+using System.Numerics;
 using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails.Utils;
 using Nethereum.ABI.EIP712;
@@ -19,7 +20,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         
         public string RpcUrl { get; private set; }
         
-        public int ChainId => _chainId;
+        public BigInteger ChainId => _chainId;
 
         public int ConnectedAccountIndex { get; private set; } = 0;
 

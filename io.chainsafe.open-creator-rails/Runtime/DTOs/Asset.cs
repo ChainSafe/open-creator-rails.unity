@@ -13,7 +13,7 @@ namespace Io.ChainSafe.OpenCreatorRails.DTOs
 {
     public struct Asset
     {
-        public string Id { get; private set; }
+        public string AssetIdHash { get; private set; }
         
         public EthereumAddress Address { get; private set; }
 
@@ -24,6 +24,8 @@ namespace Io.ChainSafe.OpenCreatorRails.DTOs
         public EthereumAddress TokenAddress { get; private set; }
         
         public EthereumAddress RegistryAddress { get; private set; }
+
+        public Subscription[] Subscriptions { get; private set; }
         
         public AssetService Service { get; private set; }
 
@@ -33,15 +35,16 @@ namespace Io.ChainSafe.OpenCreatorRails.DTOs
         
         private TypedData<Domain> _typedData;
 
-        public Asset(string id, EthereumAddress address, BigInteger subscriptionPrice, EthereumAddress owner, EthereumAddress tokenAddress, EthereumAddress registryAddress)
+        public Asset(string assetIdHash, EthereumAddress address, BigInteger subscriptionPrice, EthereumAddress owner, EthereumAddress tokenAddress, EthereumAddress registryAddress, Subscription[] subscriptions)
         {
-            Id = id;
+            AssetIdHash = assetIdHash;
             Address = address;
             SubscriptionPrice = subscriptionPrice;
             Owner = owner;
             TokenAddress = tokenAddress;
             RegistryAddress = registryAddress;
-
+            Subscriptions = subscriptions;
+            
             Web3 web3 = OpenCreatorRailsService.Instance.Web3;
             
             Service = new AssetService(web3, Address.Value);

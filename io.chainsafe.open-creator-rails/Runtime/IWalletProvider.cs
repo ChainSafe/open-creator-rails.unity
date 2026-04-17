@@ -1,3 +1,4 @@
+using System.Numerics;
 using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails.Utils;
 using Nethereum.ABI.EIP712;
@@ -8,7 +9,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 {
     public interface IWalletProvider
     {
-        public int ChainId { get; }
+        public BigInteger ChainId { get; }
 
         public int ConnectedAccountIndex { get; }
 
