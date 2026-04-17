@@ -26,6 +26,19 @@
       "ServiceNamespace":null,
       "CodeGenLanguage":"CSharp",
       "BaseOutputPath":"io.chainsafe.open-creator-rails/Runtime/Contracts"
+    },
+    {
+      "ContractName":"ERC20Permit",
+      "ABI":null,
+      "ABIFile":"open-creator-rails/apps/contracts/ERC20Permit.abi",
+      "ByteCode":null,
+      "BinFile":null,
+      "BaseNamespace":"Io.ChainSafe.OpenCreatorRails.Contracts",
+      "CQSNamespace":null,
+      "DTONamespace":null,
+      "ServiceNamespace":null,
+      "CodeGenLanguage":"CSharp",
+      "BaseOutputPath":"io.chainsafe.open-creator-rails/Runtime/Contracts"
     }
   ]
 }
