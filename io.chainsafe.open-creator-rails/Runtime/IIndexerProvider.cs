@@ -12,11 +12,14 @@ namespace Io.ChainSafe.OpenCreatorRails
         
         UniTask<Asset[]> GetAssets(EthereumAddress registryAddress);
 
-        public UniTask<Subscription[]> GetAssetSubscriptions(string assetIdHash, EthereumAddress registryAddress);
-        
         //TODO
-        //GetSubscription(assetIdHash, subscriberIdHash, registryAddress)
-        //GetSubscriptions(subscriberIdHash, registryAddress)
+        // GetMyAssets(address, registryAddress)
+        
+        public UniTask<Subscription[]> GetAssetSubscriptions(string assetIdHash, EthereumAddress registryAddress);
+
+        public UniTask<Subscription> GetSubscription(string assetIdHash, string subscriberIdHash, EthereumAddress registryAddress);
+
+        public UniTask<Subscription[]> GetSubscriptions(string subscriberIdHash, EthereumAddress registryAddress);
         
         public UniTask<bool> HasAccess(string subscriberIdHash, string assetIdHash, EthereumAddress registryAddress);
     }

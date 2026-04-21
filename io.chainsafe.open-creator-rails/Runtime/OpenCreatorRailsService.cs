@@ -53,8 +53,6 @@ namespace Io.ChainSafe.OpenCreatorRails
             Web3 = await WalletProvider.Connect();
 
             await Initialize();
-            
-            Debug.Log(_assets[0].Length);
         }
 
         private async UniTask Initialize()
@@ -91,6 +89,16 @@ namespace Io.ChainSafe.OpenCreatorRails
             return assets.First(a => a.AssetIdHash == assetId.Keccack256());
         }
 
+        // TODO
+        // ClaimCreatorFee
+        // SetSubscriptionPrice
+        // GetSubscriptionPrice(assetId, index = 0)
+        // GetToken(assetId, index = 0)
+        // GetSubscription(assetId, index = 0)
+        // GetSubscription(assetId, index = 0)
+        // HasAccess(subscriberId, assetId, index = 0)
+        // RevokeSubscription(subscriberId, assetId, index = 0)
+        
         public async UniTask<DateTime> Subscribe(string assetId, string subscriberId, TimeSpan duration, int index = 0)
         {
             Asset asset = GetAsset(assetId, index);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -131,9 +132,9 @@ namespace Io.ChainSafe.OpenCreatorRails
                             BigInteger nonce = new BigInteger(subscription.Value<long>("nonce"));
 
                             return new Subscription(assetIdHash, subscriberIdHash, payer, startTime, endTime, isActive,
-                                nonce,
-                                registryAddress);
-                        }).ToArray();
+                                nonce, registryAddress);
+                        })
+                        .ToArray();
 
                     return new Asset(assetIdHash, address, subscriptionPrice, owner, tokenAddress, registryAddress,
                         assetSubscriptions);
@@ -194,7 +195,130 @@ namespace Io.ChainSafe.OpenCreatorRails
                 .ToArray();
         }
 
-        public async UniTask<bool> HasAccess(string subscriberIdHash, string assetIdHash, EthereumAddress registryAddress)
+        public async UniTask<Subscription> GetSubscription(string assetIdHash, string subscriberIdHash,
+            EthereumAddress registryAddress)
+        {
+            // TODO: indexer should get subscriptions via assetId and registryAddress not `assetId = {chainId}_{assetAddress}`
+            JToken response = await Query<JToken>($@"
+{{
+    assetEntitys(
+        where: {{
+            assetId: ""{assetIdHash}""
+            registryAddress: ""{registryAddress.Value}""
+        }}
+        limit: 1
+      ) {{
+            items {{
+                address
+            }}
+        }}
+}}");
+            string address = response["assetEntitys"]?["items"]?.Values<JToken>().FirstOrDefault()?["address"]
+                ?.Value<string>();
+
+            BigInteger chainId = OpenCreatorRailsService.Instance.WalletProvider.ChainId;
+
+            response = await Query<JToken>($@"
+{{
+    subscriptions(
+        where: {{
+            assetId: ""{(long)chainId}_{address}""
+            subscriber: ""{subscriberIdHash}""
+        }}
+        limit: 1
+      ) {{
+            items {{
+                payer
+                startTime
+                endTime
+                nonce
+                isActive
+            }}
+        }}
+}}");
+            JToken subscriptions = response["subscriptions"]?["items"] ?? new JArray();
+
+            return subscriptions.Values<JToken>()
+                .Select(item =>
+                {
+                    EthereumAddress payer = new EthereumAddress(item.Value<string>("payer"));
+                    DateTime startTime = item["startTime"].FromUnixLongToDateTime();
+                    DateTime endTime = item["endTime"].FromUnixLongToDateTime();
+                    bool isActive = item.Value<bool>("isActive");
+                    BigInteger nonce = new BigInteger(item.Value<long>("nonce"));
+
+                    return new Subscription(assetIdHash, subscriberIdHash, payer, startTime, endTime, isActive, nonce,
+                        registryAddress);
+                })
+                .First();
+        }
+
+        public async UniTask<Subscription[]> GetSubscriptions(string subscriberIdHash, EthereumAddress registryAddress)
+        {
+            // TODO: indexer should get subscriptions via assetId and registryAddress not `assetId = {chainId}_{assetAddress}`
+            JToken response = await Query<JToken>($@"
+{{
+    assetEntitys(where: {{ registryAddress: ""{registryAddress.Value}"" }})
+        {{
+            items {{
+                address
+                assetId
+            }}
+        }}
+}}");
+            JToken assets = response["assetEntitys"]?["items"] ?? new JArray();
+
+            Dictionary<string, string> assetIdLookup = assets?.Values<JToken>()
+                .ToDictionary(asset => asset.Value<string>("address"), asset => asset.Value<string>("assetId"));
+
+        BigInteger chainId = OpenCreatorRailsService.Instance.WalletProvider.ChainId;
+            
+            string assetIdFilter = string.Join(' ', assets?.Values<JToken>().Select(item => @$"{{assetId: ""{chainId}_{item.Value<string>("address")}""}}"));
+            
+            response = await Query<JToken>($@"
+{{
+    subscriptions(
+        where: {{
+            OR: [
+                {assetIdFilter}
+            ]
+        }}
+        limit: 1
+      ) {{
+            items {{
+                assetId
+                subscriber
+                payer
+                startTime
+                endTime
+                nonce
+                isActive
+            }}
+        }}
+}}");
+            JToken subscriptions = response["subscriptions"]?["items"] ?? new JArray();
+
+            return subscriptions.Values<JToken>()
+                .Select(item =>
+                {
+                    string address = item.Value<string>("assetId").Remove(0, $"{chainId}_".Length);
+
+                    string assetIdHash = assetIdLookup[address];
+                    
+                    EthereumAddress payer = new EthereumAddress(item.Value<string>("payer"));
+                    DateTime startTime = item["startTime"].FromUnixLongToDateTime();
+                    DateTime endTime = item["endTime"].FromUnixLongToDateTime();
+                    bool isActive = item.Value<bool>("isActive");
+                    BigInteger nonce = new BigInteger(item.Value<long>("nonce"));
+
+                    return new Subscription(assetIdHash, subscriberIdHash, payer, startTime, endTime, isActive, nonce,
+                        registryAddress);
+                })
+                .ToArray();
+        }
+
+        public async UniTask<bool> HasAccess(string subscriberIdHash, string assetIdHash,
+            EthereumAddress registryAddress)
         {
             // TODO: we should fetch this from the indexer and not an RPC call
             JToken response = await Query<JToken>($@"
@@ -211,10 +335,10 @@ namespace Io.ChainSafe.OpenCreatorRails
             }}
         }}
 }}");
-            
+
             string address = response["assetEntitys"]?["items"]?.Values<JToken>().FirstOrDefault()?["address"]
                 ?.Value<string>();
-            
+
             AssetService assetService = new AssetService(OpenCreatorRailsService.Instance.Web3, address);
 
             return await assetService.IsSubscriptionActiveQueryAsync(subscriberIdHash.HexToByteArray());
