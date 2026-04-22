@@ -34,6 +34,10 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         private readonly Dictionary<int, Asset[]> _assets = new Dictionary<int, Asset[]>();
 
+        public bool Initialized { get; private set; }
+        
+        public event Action OnInitialized;
+
         private async void Awake()
         {
             if (Instance != null)
@@ -53,6 +57,10 @@ namespace Io.ChainSafe.OpenCreatorRails
             Web3 = await WalletProvider.Connect();
 
             await Initialize();
+            
+            OnInitialized?.Invoke();
+            
+            Initialized = true;
         }
 
         private async UniTask Initialize()

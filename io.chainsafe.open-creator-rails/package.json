@@ -15,5 +15,12 @@
 		"name": "ChainSafe",
 		"url": "https://chainsafe.io/"
 	},
-	"licensesUrl": "https://mit-license.org/"
+	"licensesUrl": "https://mit-license.org/",
+	"samples": [
+		{
+			"displayName": "Open Creator Rails Sample",
+			"description": "Contains implementations for Common Operations using Open Creator Rails.",
+			"path": "Samples~/Open Creator Rails"
+		}
+	]
 }
