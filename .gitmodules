@@ -1,3 +1,6 @@
 [submodule "open-creator-rails"]
 	path = open-creator-rails
 	url = git@github.com:ChainSafe/open-creator-rails.git
+[submodule "open-creator-rails.indexer"]
+	path = open-creator-rails.indexer
+	url = git@github.com:ChainSafe/open-creator-rails.indexer.git

@@ -4,7 +4,7 @@
     {
       "ContractName":"Asset",
       "ABI":null,
-      "ABIFile":"open-creator-rails/apps/contracts/Asset.abi",
+      "ABIFile":"open-creator-rails/Asset.abi",
       "ByteCode":null,
       "BinFile":null,
       "BaseNamespace":"Io.ChainSafe.OpenCreatorRails.Contracts",
@@ -17,7 +17,7 @@
     {
       "ContractName":"AssetRegistry",
       "ABI":null,
-      "ABIFile":"open-creator-rails/apps/contracts/AssetRegistry.abi",
+      "ABIFile":"open-creator-rails/AssetRegistry.abi",
       "ByteCode":null,
       "BinFile":null,
       "BaseNamespace":"Io.ChainSafe.OpenCreatorRails.Contracts",
@@ -30,7 +30,7 @@
     {
       "ContractName":"ERC20Permit",
       "ABI":null,
-      "ABIFile":"open-creator-rails/apps/contracts/ERC20Permit.abi",
+      "ABIFile":"open-creator-rails/ERC20Permit.abi",
       "ByteCode":null,
       "BinFile":null,
       "BaseNamespace":"Io.ChainSafe.OpenCreatorRails.Contracts",

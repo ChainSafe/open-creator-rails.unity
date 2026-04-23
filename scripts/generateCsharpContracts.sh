@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-CONTRACTS_DIRECTORY="open-creator-rails/apps/contracts"
+CONTRACTS_DIRECTORY="open-creator-rails/"
 
 GENERATOR_CONFIG="Nethereum.Generator.json"
 mapfile -t contracts < <(jq -r '.ABIConfigurations[].ContractName' "$GENERATOR_CONFIG")
