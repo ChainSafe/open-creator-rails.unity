@@ -18,12 +18,5 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
             
             return hash.HexToByteArray();
         }
-        
-        public static DateTime FromUnixLongToDateTime(this JToken token)
-        {
-            long unixTime = token.Value<long>();
-
-            return DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime;
-        }
     }
 }

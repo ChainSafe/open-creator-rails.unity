@@ -4,6 +4,6 @@ namespace Io.ChainSafe.OpenCreatorRails
 {
     public interface IInitializeHandler
     {
-        UniTask InitializeAsync();
+        public UniTask InitializeAsync();
     }
 }

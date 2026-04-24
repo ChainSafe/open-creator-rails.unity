@@ -4,10 +4,8 @@ using Io.ChainSafe.OpenCreatorRails.Utils;
 
 namespace Io.ChainSafe.OpenCreatorRails.DTOs
 {
-    public struct Subscription
+    public struct SubscriptionDto
     {
-        public string AssetIdHash { get; private set; }
-
         public string SubscriberIdHash { get; private set; }
 
         public EthereumAddress Payer { get; private set; }
@@ -20,19 +18,15 @@ namespace Io.ChainSafe.OpenCreatorRails.DTOs
 
         public BigInteger Nonce { get; private set; }
 
-        public EthereumAddress RegistryAddress { get; private set; }
-
-        public Subscription(string assetIdHash, string subscriberIdHash, EthereumAddress payer, DateTime startTime,
-            DateTime endTime, bool isActive, BigInteger nonce, EthereumAddress registryAddress)
+        public SubscriptionDto(string subscriberIdHash, EthereumAddress payer, DateTime startTime, DateTime endTime,
+            bool isActive, BigInteger nonce)
         {
-            AssetIdHash = assetIdHash;
             SubscriberIdHash = subscriberIdHash;
             Payer = payer;
             StartTime = startTime;
             EndTime = endTime;
             IsActive = isActive;
             Nonce = nonce;
-            RegistryAddress = registryAddress;
         }
     }
 }
