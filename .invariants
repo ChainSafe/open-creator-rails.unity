@@ -1,0 +1,27 @@
+version: "1.0"
+scope: "open-creator-rails.unity"
+inherits: "../.invariants"
+
+# Unity SDK assertions. These extend the apex invariants with guarantees
+# specific to the C# Unity SDK implementation.
+# Maintainer: Unity SDK team — not agent-writable.
+
+asserts:
+
+  - id: subscriber_identity_derivation
+    claim: "Unity SDK derives subscriber bytes32 using ABI-encoded keccak256(address) — identical to TypeScript SDK"
+    source: codebase
+    severity: FROZEN
+    verify:
+      search: "subscriber identity derivation keccak256 ABI encode address Unity Extensions"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/Utils/Extensions.cs"
+    why: "TypeScript SDK uses keccak256(abi.encodePacked(address)). Unity using Sha3Keccack on the hex string produces a different bytes32, causing subscriptions registered by one SDK to be invisible to the other."
+    note: "Currently FAILING — Extensions.cs Keccack256() uses Sha3Keccack.Current.CalculateHash(string) on the raw hex string, not ABI-encoded address bytes. Tracked in unity-8."
+
+  - id: has_access_rpc_fallback
+    claim: "HasAccess falls back to on-chain RPC call when indexer is unavailable"
+    source: codebase
+    severity: VERSIONED
+    verify:
+      search: "HasAccess RPC fallback on-chain Unity indexer unavailable"
+    why: "On-chain state is authoritative. An indexer-only HasAccess silently denies valid access during indexer outages."
