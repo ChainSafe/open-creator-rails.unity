@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails.Utils;
+using Nethereum.ABI;
 using Nethereum.Util;
 using Nethereum.Web3;
 using UnityEngine;
@@ -10,9 +11,13 @@ namespace Io.ChainSafe.OpenCreatorRails
     {
         public static OpenCreatorRailsService Instance { get; private set; }
 
+        public static ABIEncode ABIEncode { get; private set; } =  new ABIEncode();
+        
         public IWalletProvider WalletProvider { get; private set; }
 
         public IIndexerProvider IndexerProvider { get; private set; }
+        
+        public IEventHandler EventHandler { get; private set; }
 
         public Web3 Web3 { get; private set; }
 
@@ -39,11 +44,14 @@ namespace Io.ChainSafe.OpenCreatorRails
             
             WalletProvider = GetComponent<IWalletProvider>();
             IndexerProvider = GetComponent<IIndexerProvider>();
+            EventHandler = GetComponent<IEventHandler>();
         }
 
         public async UniTask Connect(int index = 0)
         {
             Web3 = await WalletProvider.Connect(index);
+
+            await GetComponents<IWeb3Initialized>().ForEachAsync(handler => handler.Connected(Web3).AsTask());
 
             await Assets.ForEachAsync(handler => handler.Connected(Web3).AsTask());
         }

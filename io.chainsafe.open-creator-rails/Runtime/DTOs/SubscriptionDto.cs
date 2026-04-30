@@ -28,5 +28,19 @@ namespace Io.ChainSafe.OpenCreatorRails.DTOs
             IsActive = isActive;
             Nonce = nonce;
         }
+
+        public SubscriptionDto Extended(DateTime endTime)
+        {
+            EndTime = endTime;
+
+            return this;
+        }
+        
+        public SubscriptionDto Deactivated()
+        {
+            IsActive = false;
+
+            return this;
+        }
     }
 }

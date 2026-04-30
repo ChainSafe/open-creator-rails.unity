@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Numerics;
 using Io.ChainSafe.OpenCreatorRails.Utils;
 
@@ -13,10 +14,10 @@ namespace Io.ChainSafe.OpenCreatorRails.DTOs
 
         public EthereumAddress TokenAddress { get; private set; }
 
-        public SubscriptionDto[] Subscriptions { get; private set; }
+        public List<SubscriptionDto> Subscriptions { get; private set; }
 
         public AssetDto(EthereumAddress address, BigInteger subscriptionPrice, EthereumAddress owner,
-            EthereumAddress tokenAddress, SubscriptionDto[] subscriptions)
+            EthereumAddress tokenAddress, List<SubscriptionDto> subscriptions)
         {
             Address = address;
             SubscriptionPrice = subscriptionPrice;

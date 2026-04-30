@@ -258,6 +258,7 @@ GameObject:
   - component: {fileID: 462771277}
   - component: {fileID: 462771276}
   - component: {fileID: 462771275}
+  - component: {fileID: 462771278}
   m_Layer: 0
   m_Name: OpenCreatorRails
   m_TagString: Untagged
@@ -322,6 +323,23 @@ MonoBehaviour:
   - <Value>k__BackingField: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   _assets:
   - {fileID: 1773824057}
+  - {fileID: 1849124531}
+  - {fileID: 2037106479}
+  - {fileID: 1751410890}
+  - {fileID: 560007252}
+--- !u!114 &462771278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 462771273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9129b0cc1e49458ab5b95c1723cceccf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.PollingEventHandler
+  _pollingInterval: 10
 --- !u!1 &560007251
 GameObject:
   m_ObjectHideFlags: 0
