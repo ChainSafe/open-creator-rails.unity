@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails.Utils;
 using Nethereum.ABI;
-using Nethereum.Util;
 using Nethereum.Web3;
 using UnityEngine;
 
@@ -40,7 +39,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            await GetComponents<IInitializeHandler>().ForEachAsync(handler => handler.InitializeAsync().AsTask());
+            await GetComponents<IInitializeHandler>().ForEachAsync(handler => handler.InitializeAsync());
             
             WalletProvider = GetComponent<IWalletProvider>();
             IndexerProvider = GetComponent<IIndexerProvider>();
@@ -51,9 +50,9 @@ namespace Io.ChainSafe.OpenCreatorRails
         {
             Web3 = await WalletProvider.Connect(index);
 
-            await GetComponents<IWeb3Initialized>().ForEachAsync(handler => handler.Connected(Web3).AsTask());
-
-            await Assets.ForEachAsync(handler => handler.Connected(Web3).AsTask());
+            await GetComponents<IWeb3Initialized>().ForEachAsync(handler => handler.Connected(Web3));
+            
+            await Assets.ForEachAsync(asset => asset.Connected(Web3));
         }
         
         // TODO

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
+using Cysharp.Threading.Tasks;
 using Nethereum.ABI;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 using Nethereum.Hex.HexConvertors.Extensions;
@@ -40,6 +42,13 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         public static DateTime FromUnixTimeToLocalDateTime(this BigInteger unixTime)
         {
             return DateTimeOffset.FromUnixTimeSeconds((long) unixTime).DateTime.ToLocalTime();
+        }
+        
+        public static UniTask ForEachAsync<T>(
+            this IEnumerable<T> collection,
+            Func<T, UniTask> action)
+        {
+            return UniTask.WhenAll(collection.Select(action));
         }
     }
 }

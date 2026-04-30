@@ -128,6 +128,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         // SetSubscriptionPrice
         // ClaimCreatorFee()
         // ClaimCreatorFee batch
+        // CancelSubscription
         // RevokeSubscription(subscriberId)
 
         private async UniTask<(Permit permit, TypedData<Domain> typedData)> GetPermit(TimeSpan duration)
