@@ -16,7 +16,6 @@ asserts:
       search: "SubscriberToId subscriberId address keccak256 abi.encode Unity Extensions"
       in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/Utils/Extensions.cs"
     why: "Both fields are required. Using address-only or string-only hashing produces a different bytes32, making subscriptions registered by one SDK invisible to the other and making self-cancellation impossible."
-    note: "Currently FAILING — Extensions.cs Keccack256Bytes(string) hashes the hex string alone, not ABI-encoded (subscriberId, address). Target implementation is SubscriberToId(subscriberId, address) using Nethereum ABIEncode. Tracked in unity-8."
 
   - id: has_access_rpc_fallback
     claim: "HasAccess falls back to on-chain RPC call when indexer is unavailable"
@@ -35,4 +34,3 @@ asserts:
       in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/Asset.cs"
     cascades_from: "/.invariants#cancel_commitment_protocol"
     why: "Single-step cancellation (revokeSubscription) is owner-only. The two-step pattern is required for subscriber self-service cancellation and prevents front-running via the commit-reveal design."
-    note: "Currently NOT IMPLEMENTED — CancelSubscription and CommitCancellation are TODO stubs in Asset.cs. Tracked in unity-17."
