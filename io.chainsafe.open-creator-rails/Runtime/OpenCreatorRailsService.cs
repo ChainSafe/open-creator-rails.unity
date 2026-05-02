@@ -1,3 +1,4 @@
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails.Utils;
 using Nethereum.ABI;
@@ -19,9 +20,6 @@ namespace Io.ChainSafe.OpenCreatorRails
         public IEventHandler EventHandler { get; private set; }
 
         public Web3 Web3 { get; private set; }
-
-        [Tooltip("Asset Registry Contract Addresses.")] [SerializeField]
-        private EthereumAddress[] _registryAddresses;
 
         [SerializeField] private Asset[] _assets;
 
@@ -54,9 +52,13 @@ namespace Io.ChainSafe.OpenCreatorRails
             
             await Assets.ForEachAsync(asset => asset.Connected(Web3));
         }
-        
-        // TODO
-        // GetAsset(assetId, registryAddress) Asset component (not DTO)
+
+        public bool TryGetAsset(string assetId, out Asset asset, EthereumAddress? registryAddress = null)
+        {
+            asset = _assets.FirstOrDefault(asset => asset.AssetId == assetId && (registryAddress == null || registryAddress.Value == asset.RegistryAddress));
+            
+            return asset != null;
+        }
 
         private async void OnDestroy()
         {

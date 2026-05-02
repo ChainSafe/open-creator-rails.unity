@@ -24,7 +24,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 {
     public class Asset : MonoBehaviour
     {
-        [SerializeField] private EthereumAddress _registryAddress;
+        [field: SerializeField] public EthereumAddress RegistryAddress { get; private set; }
 
         [field: SerializeField] public string AssetId { get; private set; }
 
@@ -53,7 +53,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         public async UniTask Connected(Web3 web3)
         {
             AssetDto assetDto =
-                await OpenCreatorRailsService.Instance.IndexerProvider.GetAsset(AssetIdHash, _registryAddress);
+                await OpenCreatorRailsService.Instance.IndexerProvider.GetAsset(AssetIdHash, RegistryAddress);
 
             Address = assetDto.Address;
             SubscriptionPrice = assetDto.SubscriptionPrice;
@@ -63,7 +63,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             Service = new AssetService(web3, Address.Value);
             PermitService = new ERC20PermitService(web3, TokenAddress.Value);
-            AssetRegistryService = new AssetRegistryService(web3, _registryAddress.Value);
+            AssetRegistryService = new AssetRegistryService(web3, RegistryAddress.Value);
 
             SubscribeToEvents();
 
@@ -165,23 +165,29 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         private void SubscriptionAdded(SubscriptionAddedEventDTO @event)
         {
-            string subscriberIdHash = @event.Subscriber.ToHex();
+            string subscriberIdHash = @event.Subscriber.ToHex(true);
             EthereumAddress payer = new EthereumAddress(@event.Payer);
             DateTime startTime = @event.StartTime.FromUnixTimeToLocalDateTime();
             DateTime endTime = @event.EndTime.FromUnixTimeToLocalDateTime();
             BigInteger nonce = @event.Nonce;
 
-            Subscriptions.Add(new SubscriptionDto(subscriberIdHash, payer, startTime, endTime, true, nonce));
+            if (!Subscriptions.Exists(subscription => subscription.SubscriberIdHash == subscriberIdHash))
+            {
+                Subscriptions.Add(new SubscriptionDto(subscriberIdHash, payer, startTime, endTime, true, nonce));
+            }
         }
 
         private void SubscriptionExtended(SubscriptionExtendedEventDTO @event)
         {
-            string subscriberIdHash = @event.Subscriber.ToHex();
+            string subscriberIdHash = @event.Subscriber.ToHex(true);
             DateTime endTime = @event.EndTime.FromUnixTimeToLocalDateTime();
 
             int index = Subscriptions.FindIndex(subscription => subscription.SubscriberIdHash == subscriberIdHash);
 
-            Subscriptions[index] = Subscriptions[index].Extended(endTime);
+            if (Subscriptions[index].EndTime < endTime)
+            {
+                Subscriptions[index] = Subscriptions[index].Extended(endTime);
+            }
         }
 
         private void SubscriptionPriceUpdated(SubscriptionPriceUpdatedEventDTO @event)
@@ -191,14 +197,14 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         private void SubscriptionCancelled(SubscriptionCancelledEventDTO @event)
         {
-            string subscriberIdHash = @event.Subscriber.ToHex();
+            string subscriberIdHash = @event.Subscriber.ToHex(true);
 
             SubscriptionDeactivated(subscriberIdHash);
         }
 
         private void SubscriptionRevoked(SubscriptionRevokedEventDTO @event)
         {
-            string subscriberIdHash = @event.Subscriber.ToHex();
+            string subscriberIdHash = @event.Subscriber.ToHex(true);
 
             SubscriptionDeactivated(subscriberIdHash);
         }
@@ -212,7 +218,10 @@ namespace Io.ChainSafe.OpenCreatorRails
         {
             int index = Subscriptions.FindIndex(subscription => subscription.SubscriberIdHash == subscriberIdHash);
 
-            Subscriptions[index] = Subscriptions[index].Deactivated();
+            if (Subscriptions[index].IsActive)
+            {
+                Subscriptions[index] = Subscriptions[index].Deactivated();
+            }
         }
 
         #endregion

@@ -319,8 +319,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd76cd16673940718cb2ba938d239061, type: 3}
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.OpenCreatorRailsService
-  _registryAddresses:
-  - <Value>k__BackingField: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   _assets:
   - {fileID: 1773824057}
   - {fileID: 1849124531}
@@ -369,7 +367,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f186a88c5868487a91616782cf2051d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.Asset
-  _registryAddress:
+  <RegistryAddress>k__BackingField:
     <Value>k__BackingField: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   <AssetId>k__BackingField: local_asset_5
 --- !u!4 &560007253
@@ -1018,7 +1016,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f186a88c5868487a91616782cf2051d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.Asset
-  _registryAddress:
+  <RegistryAddress>k__BackingField:
     <Value>k__BackingField: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   <AssetId>k__BackingField: local_asset_4
 --- !u!4 &1751410891
@@ -1065,7 +1063,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f186a88c5868487a91616782cf2051d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.Asset
-  _registryAddress:
+  <RegistryAddress>k__BackingField:
     <Value>k__BackingField: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   <AssetId>k__BackingField: local_asset_1
 --- !u!4 &1773824058
@@ -1112,7 +1110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f186a88c5868487a91616782cf2051d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.Asset
-  _registryAddress:
+  <RegistryAddress>k__BackingField:
     <Value>k__BackingField: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   <AssetId>k__BackingField: local_asset_2
 --- !u!4 &1849124532
@@ -1159,7 +1157,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f186a88c5868487a91616782cf2051d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.Asset
-  _registryAddress:
+  <RegistryAddress>k__BackingField:
     <Value>k__BackingField: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
   <AssetId>k__BackingField: local_asset_3
 --- !u!4 &2037106480

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -16,11 +17,13 @@ namespace Io.ChainSafe.OpenCreatorRails
     {
         private Func<UniTask> _pollEvent;
 
-        [SerializeField] private int _pollingInterval = 10;
+        [SerializeField] private int _pollingInterval = 12;
         
         private BigInteger _lastBlock;
 
         private float _time;
+
+        private readonly HashSet<string> _hashes = new HashSet<string>();
         
         private void OnEnable()
         {
@@ -39,14 +42,22 @@ namespace Io.ChainSafe.OpenCreatorRails
             _pollEvent += async () =>
             {
                 BigInteger currentBlock = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+
+                if (currentBlock - _lastBlock == 0)
+                {
+                    return;
+                }
                 
-                var filter = @event.CreateFilterInput(new BlockParameter(new HexBigInteger(_lastBlock)), new HexBigInteger(currentBlock));
+                var filter = @event.CreateFilterInput(new BlockParameter(new HexBigInteger(_lastBlock)), new BlockParameter(new HexBigInteger(currentBlock)));
 
                 var logs = await @event.GetAllChangesAsync(filter);
                 
                 foreach (var log in logs)
                 {
-                    @delegate?.Invoke(log.Event);
+                    if (_hashes.Add(log.Log.TransactionHash))
+                    {
+                        @delegate?.Invoke(log.Event);
+                    }
                 }
             };
         }
