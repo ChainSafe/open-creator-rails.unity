@@ -9,14 +9,14 @@ inherits: "../.invariants"
 asserts:
 
   - id: subscriber_identity_derivation
-    claim: "Unity SDK derives subscriber bytes32 using ABI-encoded keccak256(address) — identical to TypeScript SDK"
+    claim: "Unity SDK derives subscriber bytes32 as keccak256(abi.encode(subscriberId, address)) — identical to the on-chain formula in Asset.cancelSubscription and to the TypeScript SDK"
     source: codebase
     severity: FROZEN
     verify:
-      search: "subscriber identity derivation keccak256 ABI encode address Unity Extensions"
+      search: "SubscriberToId subscriberId address keccak256 abi.encode Unity Extensions"
       in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/Utils/Extensions.cs"
-    why: "TypeScript SDK uses keccak256(abi.encodePacked(address)). Unity using Sha3Keccack on the hex string produces a different bytes32, causing subscriptions registered by one SDK to be invisible to the other."
-    note: "Currently FAILING — Extensions.cs Keccack256() uses Sha3Keccack.Current.CalculateHash(string) on the raw hex string, not ABI-encoded address bytes. Tracked in unity-8."
+    why: "Both fields are required. Using address-only or string-only hashing produces a different bytes32, making subscriptions registered by one SDK invisible to the other and making self-cancellation impossible."
+    note: "Currently FAILING — Extensions.cs Keccack256Bytes(string) hashes the hex string alone, not ABI-encoded (subscriberId, address). Target implementation is SubscriberToId(subscriberId, address) using Nethereum ABIEncode. Tracked in unity-8."
 
   - id: has_access_rpc_fallback
     claim: "HasAccess falls back to on-chain RPC call when indexer is unavailable"
@@ -25,3 +25,14 @@ asserts:
     verify:
       search: "HasAccess RPC fallback on-chain Unity indexer unavailable"
     why: "On-chain state is authoritative. An indexer-only HasAccess silently denies valid access during indexer outages."
+
+  - id: cancel_commitment_protocol
+    claim: "Subscriber-initiated cancellation uses the two-step commit-reveal flow: commitCancellation(subscriberId) followed by cancelSubscription(subscriberId, timestamp, signature)"
+    source: codebase
+    severity: VERSIONED
+    verify:
+      search: "commitCancellation cancelSubscription two-step Unity Asset"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/Asset.cs"
+    cascades_from: "/.invariants#cancel_commitment_protocol"
+    why: "Single-step cancellation (revokeSubscription) is owner-only. The two-step pattern is required for subscriber self-service cancellation and prevents front-running via the commit-reveal design."
+    note: "Currently NOT IMPLEMENTED — CancelSubscription and CommitCancellation are TODO stubs in Asset.cs. Tracked in unity-17."
