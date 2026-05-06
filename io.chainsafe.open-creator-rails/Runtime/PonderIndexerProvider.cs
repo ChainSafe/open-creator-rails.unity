@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -84,7 +85,7 @@ limit: 1)
              EthereumAddress owner = new EthereumAddress(asset.Value<string>("owner"));
              EthereumAddress tokenAddress = new EthereumAddress(asset.Value<string>("tokenAddress"));
              
-             SubscriptionDto[] subscriptions = asset?["subscriptions"]?["items"]?.Values<JToken>().Select(subscription =>
+             List<SubscriptionDto> subscriptions = asset?["subscriptions"]?["items"]?.Values<JToken>().Select(subscription =>
              {
                  string subscriberIdHash = subscription.Value<string>("subscriber");
                  EthereumAddress payer = new EthereumAddress(subscription.Value<string>("payer"));
@@ -94,7 +95,7 @@ limit: 1)
                  BigInteger nonce = BigInteger.Parse(subscription.Value<string>("nonce"));
                  
                  return new SubscriptionDto(subscriberIdHash, payer, startTime, endTime, isActive, nonce);
-             }).ToArray();
+             }).ToList();
 
              return new AssetDto(address, subscriptionPrice, owner, tokenAddress, subscriptions);
         }
