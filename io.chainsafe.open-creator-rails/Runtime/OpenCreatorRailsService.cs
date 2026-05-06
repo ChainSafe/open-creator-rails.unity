@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails.Utils;
@@ -18,12 +19,12 @@ namespace Io.ChainSafe.OpenCreatorRails
         public IIndexerProvider IndexerProvider { get; private set; }
         
         public IEventHandler EventHandler { get; private set; }
-
+        
         public Web3 Web3 { get; private set; }
 
         [SerializeField] private Asset[] _assets;
 
-        public Asset[] Assets => _assets;
+        public IAsset[] Assets => Array.ConvertAll(_assets, asset => (IAsset) asset);
 
         private async void Awake()
         {
@@ -53,9 +54,9 @@ namespace Io.ChainSafe.OpenCreatorRails
             await Assets.ForEachAsync(asset => asset.Connected(Web3));
         }
 
-        public bool TryGetAsset(string assetId, out Asset asset, EthereumAddress? registryAddress = null)
+        public bool TryGetAsset(string assetId, out IAsset asset, EthereumAddress? registryAddress = null)
         {
-            asset = _assets.FirstOrDefault(asset => asset.AssetId == assetId && (registryAddress == null || registryAddress.Value == asset.RegistryAddress));
+            asset = Assets.FirstOrDefault(asset => asset.AssetId == assetId && (registryAddress == null || registryAddress.Value == asset.RegistryAddress));
             
             return asset != null;
         }

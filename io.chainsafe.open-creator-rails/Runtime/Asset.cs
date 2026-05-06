@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace Io.ChainSafe.OpenCreatorRails
 {
-    public class Asset : MonoBehaviour
+    public class Asset : MonoBehaviour, IAsset
     {
         [field: SerializeField] public EthereumAddress RegistryAddress { get; private set; }
 
