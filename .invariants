@@ -1,0 +1,54 @@
+version: "1.0"
+scope: "open-creator-rails.unity"
+inherits: "../.invariants"
+
+# Unity SDK architecture assertions derived from docs/architecture/sdk-class-diagram.md.
+# These are strict design constraints for the C# Unity SDK implementation.
+# Maintainer: Unity SDK team — not agent-writable.
+
+asserts:
+
+  - id: sdk_singleton_orchestration
+    claim: "SDK runtime entrypoint remains a singleton orchestrator that owns references to IIndexerProvider, IWalletProvider, IEventHandler, and the IAsset collection"
+    source: codebase
+    severity: FROZEN
+    verify:
+      search: "Instance IIndexerProvider IWalletProvider IEventHandler Assets"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/OpenCreatorRailsService.cs"
+    why: "Centralized orchestration is required for deterministic initialization and dependency wiring across wallet, indexer, events, and assets."
+
+  - id: sdk_dependency_on_interfaces
+    claim: "SDK orchestration depends on interfaces (IIndexerProvider, IWalletProvider, IEventHandler, IAsset) rather than concrete provider implementations"
+    source: codebase
+    severity: FROZEN
+    verify:
+      search: "IIndexerProvider IWalletProvider IEventHandler IAsset"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime"
+    why: "Interface-first dependencies preserve swappability of providers and avoid coupling orchestration logic to specific implementations."
+
+  - id: provider_implementations_contract
+    claim: "PonderIndexerProvider must implement IIndexerProvider and EmbeddedWalletProvider must implement IWalletProvider"
+    source: codebase
+    severity: VERSIONED
+    verify:
+      search: "class PonderIndexerProvider : MonoBehaviour, IIndexerProvider|class EmbeddedWalletProvider : MonoBehaviour, IWalletProvider"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime"
+    why: "The architecture explicitly defines these concrete classes as baseline implementations for indexer and wallet concerns."
+
+  - id: asset_contract_service_composition
+    claim: "Each asset runtime object composes generated contract services for Asset, ERC20Permit, and AssetRegistry interactions"
+    source: codebase
+    severity: FROZEN
+    verify:
+      search: "AssetService ERC20PermitService AssetRegistryService"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/Asset.cs"
+    why: "Service composition separates asset contract calls, permit flows, and registry coordination, preventing cross-concern leakage."
+
+  - id: asset_event_handling_via_eventhandler
+    claim: "Smart contract event subscription responsibilities stay behind IEventHandler and are consumed by asset runtime logic"
+    source: codebase
+    severity: VERSIONED
+    verify:
+      search: "IEventHandler SubscribeToEvent Subscribe<"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime"
+    why: "Keeping event wiring behind a dedicated interface preserves testability and allows event transport/mechanics to evolve independently."
