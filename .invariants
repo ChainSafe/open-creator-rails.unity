@@ -2,35 +2,53 @@ version: "1.0"
 scope: "open-creator-rails.unity"
 inherits: "../.invariants"
 
-# Unity SDK assertions. These extend the apex invariants with guarantees
-# specific to the C# Unity SDK implementation.
+# Unity SDK architecture assertions derived from docs/architecture/sdk-class-diagram.md.
+# These are strict design constraints for the C# Unity SDK implementation.
 # Maintainer: Unity SDK team — not agent-writable.
 
 asserts:
 
-  - id: subscriber_identity_derivation
-    claim: "Unity SDK derives subscriber bytes32 as keccak256(abi.encode(subscriberId, address)) — identical to the on-chain formula in Asset.cancelSubscription and to the TypeScript SDK"
+  - id: sdk_singleton_orchestration
+    claim: "SDK runtime entrypoint remains a singleton orchestrator that owns references to IIndexerProvider, IWalletProvider, IEventHandler, and the IAsset collection"
     source: codebase
     severity: FROZEN
     verify:
-      search: "SubscriberToId subscriberId address keccak256 abi.encode Unity Extensions"
-      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/Utils/Extensions.cs"
-    why: "Both fields are required. Using address-only or string-only hashing produces a different bytes32, making subscriptions registered by one SDK invisible to the other and making self-cancellation impossible."
+      search: "Instance IIndexerProvider IWalletProvider IEventHandler Assets"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/OpenCreatorRailsService.cs"
+    why: "Centralized orchestration is required for deterministic initialization and dependency wiring across wallet, indexer, events, and assets."
 
-  - id: has_access_rpc_fallback
-    claim: "HasAccess falls back to on-chain RPC call when indexer is unavailable"
+  - id: sdk_dependency_on_interfaces
+    claim: "SDK orchestration depends on interfaces (IIndexerProvider, IWalletProvider, IEventHandler, IAsset) rather than concrete provider implementations"
+    source: codebase
+    severity: FROZEN
+    verify:
+      search: "IIndexerProvider IWalletProvider IEventHandler IAsset"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime"
+    why: "Interface-first dependencies preserve swappability of providers and avoid coupling orchestration logic to specific implementations."
+
+  - id: provider_implementations_contract
+    claim: "PonderIndexerProvider must implement IIndexerProvider and EmbeddedWalletProvider must implement IWalletProvider"
     source: codebase
     severity: VERSIONED
     verify:
-      search: "HasAccess RPC fallback on-chain Unity indexer unavailable"
-    why: "On-chain state is authoritative. An indexer-only HasAccess silently denies valid access during indexer outages."
+      search: "class PonderIndexerProvider : MonoBehaviour, IIndexerProvider|class EmbeddedWalletProvider : MonoBehaviour, IWalletProvider"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime"
+    why: "The architecture explicitly defines these concrete classes as baseline implementations for indexer and wallet concerns."
 
-  - id: cancel_commitment_protocol
-    claim: "Subscriber-initiated cancellation uses the two-step commit-reveal flow: commitCancellation(subscriberId) followed by cancelSubscription(subscriberId, timestamp, signature)"
+  - id: asset_contract_service_composition
+    claim: "Each asset runtime object composes generated contract services for Asset, ERC20Permit, and AssetRegistry interactions"
     source: codebase
-    severity: VERSIONED
+    severity: FROZEN
     verify:
-      search: "commitCancellation cancelSubscription two-step Unity Asset"
+      search: "AssetService ERC20PermitService AssetRegistryService"
       in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime/Asset.cs"
-    cascades_from: "/.invariants#cancel_commitment_protocol"
-    why: "Single-step cancellation (revokeSubscription) is owner-only. The two-step pattern is required for subscriber self-service cancellation and prevents front-running via the commit-reveal design."
+    why: "Service composition separates asset contract calls, permit flows, and registry coordination, preventing cross-concern leakage."
+
+  - id: asset_event_handling_via_eventhandler
+    claim: "Smart contract event subscription responsibilities stay behind IEventHandler and are consumed by asset runtime logic"
+    source: codebase
+    severity: VERSIONED
+    verify:
+      search: "IEventHandler SubscribeToEvent Subscribe<"
+      in_file: "open-creator-rails.unity/io.chainsafe.open-creator-rails/Runtime"
+    why: "Keeping event wiring behind a dedicated interface preserves testability and allows event transport/mechanics to evolve independently."
