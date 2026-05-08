@@ -67,11 +67,12 @@ limit: 1)
             subscriptions {{
                 items {{
                     subscriber
-                    payer
+                    nonce
                     startTime
                     endTime
-                    isActive
-                    nonce
+                    subscriptionPrice
+                    registryFeeShare
+                    payer
                 }}
             }}
         }}
@@ -88,13 +89,14 @@ limit: 1)
              List<SubscriptionDto> subscriptions = asset?["subscriptions"]?["items"]?.Values<JToken>().Select(subscription =>
              {
                  string subscriberIdHash = subscription.Value<string>("subscriber");
-                 EthereumAddress payer = new EthereumAddress(subscription.Value<string>("payer"));
+                 BigInteger nonce = BigInteger.Parse(subscription.Value<string>("nonce"));
                  DateTime startTime = DateTimeOffset.FromUnixTimeSeconds(subscription.Value<long>("startTime")).DateTime;
                  DateTime endTime = DateTimeOffset.FromUnixTimeSeconds(subscription.Value<long>("endTime")).DateTime;
-                 bool isActive = subscription.Value<bool>("isActive");
-                 BigInteger nonce = BigInteger.Parse(subscription.Value<string>("nonce"));
+                 BigInteger registryFeeShare = BigInteger.Parse(subscription.Value<string>("registryFeeShare"));
+                 BigInteger subscribedAtPrice = BigInteger.Parse(subscription.Value<string>("subscriptionPrice"));
+                 EthereumAddress payer = new EthereumAddress(subscription.Value<string>("payer"));
                  
-                 return new SubscriptionDto(subscriberIdHash, payer, startTime, endTime, isActive, nonce);
+                 return new SubscriptionDto(subscriberIdHash, nonce, startTime, endTime, subscribedAtPrice, registryFeeShare, payer);
              }).ToList();
 
              return new AssetDto(address, subscriptionPrice, owner, tokenAddress, subscriptions);

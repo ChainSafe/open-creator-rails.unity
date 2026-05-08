@@ -35,14 +35,19 @@ namespace Io.ChainSafe.OpenCreatorRails
         public AssetRegistryService AssetRegistryService { get; }
         
         // For subscriber
-        // UniTask<DateTime> GetSubscriptionExpiration(string subscriberId);
+        UniTask<DateTime> GetSubscriptionEndTime(string subscriberId);
+        
         UniTask<DateTime> Subscribe(string subscriberId, TimeSpan duration);
-        // UniTask CancelSubscription(string subscriberId);
+        
+        UniTask CancelSubscription(string subscriberId);
 
         // For Asset Owner
-        // UniTask SetSubscriptionPrice(BigInteger newSubscriptionPrice);
-        // UniTask<BigInteger> ClaimCreatorFee(string subscriberId);
-        // UniTask<BigInteger> ClaimCreatorFee(string[] subscriberIds);
-        // UniTask RevokeSubscription(string subscriberId);
+        UniTask SetSubscriptionPrice(BigInteger newSubscriptionPrice);
+        
+        UniTask<BigInteger> ClaimCreatorFee(string subscriberId);
+        
+        UniTask<BigInteger> ClaimCreatorFee(string[] subscriberIds);
+        
+        UniTask RevokeSubscription(string subscriberId);
     }
 }

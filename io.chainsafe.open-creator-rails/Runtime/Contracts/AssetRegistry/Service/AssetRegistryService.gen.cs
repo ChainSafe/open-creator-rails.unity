@@ -60,34 +60,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
             return ContractHandler.QueryAsync<AssetsFunction, string>(assetsFunction, blockParameter);
         }
 
-        public virtual Task<string> CancelSubscriptionRequestAsync(CancelSubscriptionFunction cancelSubscriptionFunction)
-        {
-             return ContractHandler.SendRequestAsync(cancelSubscriptionFunction);
-        }
-
-        public virtual Task<TransactionReceipt> CancelSubscriptionRequestAndWaitForReceiptAsync(CancelSubscriptionFunction cancelSubscriptionFunction, CancellationTokenSource cancellationToken = null)
-        {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelSubscriptionFunction, cancellationToken);
-        }
-
-        public virtual Task<string> CancelSubscriptionRequestAsync(byte[] assetId, byte[] subscriber)
-        {
-            var cancelSubscriptionFunction = new CancelSubscriptionFunction();
-                cancelSubscriptionFunction.AssetId = assetId;
-                cancelSubscriptionFunction.Subscriber = subscriber;
-            
-             return ContractHandler.SendRequestAsync(cancelSubscriptionFunction);
-        }
-
-        public virtual Task<TransactionReceipt> CancelSubscriptionRequestAndWaitForReceiptAsync(byte[] assetId, byte[] subscriber, CancellationTokenSource cancellationToken = null)
-        {
-            var cancelSubscriptionFunction = new CancelSubscriptionFunction();
-                cancelSubscriptionFunction.AssetId = assetId;
-                cancelSubscriptionFunction.Subscriber = subscriber;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelSubscriptionFunction, cancellationToken);
-        }
-
         public virtual Task<string> ClaimRegistryFeeRequestAsync(ClaimRegistryFeeFunction claimRegistryFeeFunction)
         {
              return ContractHandler.SendRequestAsync(claimRegistryFeeFunction);
@@ -463,7 +435,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
             return new List<Type>
             {
                 typeof(AssetsFunction),
-                typeof(CancelSubscriptionFunction),
                 typeof(ClaimRegistryFeeFunction),
                 typeof(ClaimRegistryFee1Function),
                 typeof(CreateAssetFunction),

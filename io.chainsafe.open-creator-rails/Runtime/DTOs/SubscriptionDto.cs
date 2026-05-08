@@ -8,37 +8,46 @@ namespace Io.ChainSafe.OpenCreatorRails.DTOs
     {
         public string SubscriberIdHash { get; private set; }
 
-        public EthereumAddress Payer { get; private set; }
-
+        public BigInteger Nonce { get; private set; }
+        
         public DateTime StartTime { get; private set; }
 
         public DateTime EndTime { get; private set; }
 
-        public bool IsActive { get; private set; }
-
-        public BigInteger Nonce { get; private set; }
-
-        public SubscriptionDto(string subscriberIdHash, EthereumAddress payer, DateTime startTime, DateTime endTime,
-            bool isActive, BigInteger nonce)
+        public BigInteger SubscriptionPrice { get; private set; }
+        
+        public BigInteger RegistryFeeShare { get; private set; }
+        
+        public EthereumAddress Payer { get; private set; }
+        
+        public SubscriptionDto(string subscriberIdHash, BigInteger nonce, DateTime startTime, DateTime endTime,
+            BigInteger subscriptionPrice, BigInteger registryFeeShare, EthereumAddress payer)
         {
             SubscriberIdHash = subscriberIdHash;
-            Payer = payer;
+            Nonce = nonce;
             StartTime = startTime;
             EndTime = endTime;
-            IsActive = isActive;
-            Nonce = nonce;
+            SubscriptionPrice = subscriptionPrice;
+            RegistryFeeShare = registryFeeShare;
+            Payer = payer;
         }
 
         public SubscriptionDto Extended(DateTime endTime)
         {
-            EndTime = endTime;
+            if (EndTime < endTime)
+            {
+                EndTime = endTime;
+            }
 
             return this;
         }
         
-        public SubscriptionDto Deactivated()
+        public SubscriptionDto Shortened(DateTime endTime)
         {
-            IsActive = false;
+            if (endTime < EndTime)
+            {
+                EndTime = endTime;
+            }
 
             return this;
         }

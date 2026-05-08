@@ -33,6 +33,15 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         {
             return OpenCreatorRailsService.ABIEncode.GetABIEncoded(values);
         }
+        
+        public static byte[] ToSubscriberIdHash(this string subscriberId)
+        {
+            EthereumAddress account = OpenCreatorRailsService.Instance.WalletProvider.ConnectedAccount;
+
+            return new ABIValue[] { new ("string", subscriberId), new ("address", account.Value) }
+                .GetABIEncoded()
+                .Keccack256();
+        }
 
         public static void SubscribeToEvent<T>(this ContractWeb3ServiceBase service, EventDelegate<T> @delegate) where T : IEventDTO, new()
         {

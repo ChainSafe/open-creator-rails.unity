@@ -37,17 +37,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.ContractDefiniti
         public virtual byte[] ReturnValue1 { get; set; }
     }
 
-    public partial class CancelSubscriptionFunction : CancelSubscriptionFunctionBase { }
-
-    [Function("cancelSubscription")]
-    public class CancelSubscriptionFunctionBase : FunctionMessage
-    {
-        [Parameter("bytes32", "_assetId", 1)]
-        public virtual byte[] AssetId { get; set; }
-        [Parameter("bytes32", "_subscriber", 2)]
-        public virtual byte[] Subscriber { get; set; }
-    }
-
     public partial class ClaimRegistryFeeFunction : ClaimRegistryFeeFunctionBase { }
 
     [Function("claimRegistryFee", "uint256")]
@@ -359,8 +348,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.ContractDefiniti
         [Parameter("address", "", 1)]
         public virtual string ReturnValue1 { get; set; }
     }
-
-
 
 
 

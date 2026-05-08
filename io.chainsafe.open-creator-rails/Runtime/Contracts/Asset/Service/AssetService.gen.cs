@@ -56,18 +56,20 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelSubscriptionFunction, cancellationToken);
         }
 
-        public virtual Task<string> CancelSubscriptionRequestAsync(byte[] subscriber)
+        public virtual Task<string> CancelSubscriptionRequestAsync(string subscriberId, byte[] signature)
         {
             var cancelSubscriptionFunction = new CancelSubscriptionFunction();
-                cancelSubscriptionFunction.Subscriber = subscriber;
+                cancelSubscriptionFunction.SubscriberId = subscriberId;
+                cancelSubscriptionFunction.Signature = signature;
             
              return ContractHandler.SendRequestAsync(cancelSubscriptionFunction);
         }
 
-        public virtual Task<TransactionReceipt> CancelSubscriptionRequestAndWaitForReceiptAsync(byte[] subscriber, CancellationTokenSource cancellationToken = null)
+        public virtual Task<TransactionReceipt> CancelSubscriptionRequestAndWaitForReceiptAsync(string subscriberId, byte[] signature, CancellationTokenSource cancellationToken = null)
         {
             var cancelSubscriptionFunction = new CancelSubscriptionFunction();
-                cancelSubscriptionFunction.Subscriber = subscriber;
+                cancelSubscriptionFunction.SubscriberId = subscriberId;
+                cancelSubscriptionFunction.Signature = signature;
             
              return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelSubscriptionFunction, cancellationToken);
         }
@@ -429,11 +431,14 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
             return new List<Type>
             {
                 typeof(CreatorFeeClaimedEventDTO),
+                typeof(CreatorFeeClaimedBatchEventDTO),
                 typeof(OwnershipTransferredEventDTO),
                 typeof(SubscriptionAddedEventDTO),
                 typeof(SubscriptionCancelledEventDTO),
                 typeof(SubscriptionExtendedEventDTO),
                 typeof(SubscriptionPriceUpdatedEventDTO),
+                typeof(SubscriptionRemovedEventDTO),
+                typeof(SubscriptionRenewedEventDTO),
                 typeof(SubscriptionRevokedEventDTO)
             };
         }
@@ -442,8 +447,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
         {
             return new List<Type>
             {
+                typeof(ECDSAInvalidSignatureError),
+                typeof(ECDSAInvalidSignatureLengthError),
+                typeof(ECDSAInvalidSignatureSError),
                 typeof(InsufficientFundsError),
                 typeof(InvalidOwnerError),
+                typeof(InvalidSignatureError),
                 typeof(InvalidSpenderError),
                 typeof(InvalidTokenAddressError),
                 typeof(OnlyRegistryUnauthorizedAccountError),

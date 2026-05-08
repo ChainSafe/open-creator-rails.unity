@@ -39,8 +39,10 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
     [Function("cancelSubscription")]
     public class CancelSubscriptionFunctionBase : FunctionMessage
     {
-        [Parameter("bytes32", "subscriber", 1)]
-        public virtual byte[] Subscriber { get; set; }
+        [Parameter("string", "subscriberId", 1)]
+        public virtual string SubscriberId { get; set; }
+        [Parameter("bytes", "signature", 2)]
+        public virtual byte[] Signature { get; set; }
     }
 
     public partial class ClaimCreatorFeeFunction : ClaimCreatorFeeFunctionBase { }
@@ -207,6 +209,17 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual BigInteger Amount { get; set; }
     }
 
+    public partial class CreatorFeeClaimedBatchEventDTO : CreatorFeeClaimedBatchEventDTOBase { }
+
+    [Event("CreatorFeeClaimedBatch")]
+    public class CreatorFeeClaimedBatchEventDTOBase : IEventDTO
+    {
+        [Parameter("bytes32[]", "subscribers", 1, true )]
+        public virtual List<byte[]> Subscribers { get; set; }
+        [Parameter("uint256", "totalAmount", 2, false )]
+        public virtual BigInteger TotalAmount { get; set; }
+    }
+
     public partial class OwnershipTransferredEventDTO : OwnershipTransferredEventDTOBase { }
 
     [Event("OwnershipTransferred")]
@@ -229,10 +242,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual BigInteger StartTime { get; set; }
         [Parameter("uint256", "endTime", 3, true )]
         public virtual BigInteger EndTime { get; set; }
-        [Parameter("uint256", "nonce", 4, false )]
-        public virtual BigInteger Nonce { get; set; }
-        [Parameter("address", "payer", 5, false )]
+        [Parameter("address", "payer", 4, false )]
         public virtual string Payer { get; set; }
+        [Parameter("uint256", "subscriptionPrice", 5, false )]
+        public virtual BigInteger SubscriptionPrice { get; set; }
+        [Parameter("uint256", "registryFeeShare", 6, false )]
+        public virtual BigInteger RegistryFeeShare { get; set; }
     }
 
     public partial class SubscriptionCancelledEventDTO : SubscriptionCancelledEventDTOBase { }
@@ -242,6 +257,10 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
     {
         [Parameter("bytes32", "subscriber", 1, true )]
         public virtual byte[] Subscriber { get; set; }
+        [Parameter("uint256", "nonce", 2, true )]
+        public virtual BigInteger Nonce { get; set; }
+        [Parameter("uint256", "endTime", 3, true )]
+        public virtual BigInteger EndTime { get; set; }
     }
 
     public partial class SubscriptionExtendedEventDTO : SubscriptionExtendedEventDTOBase { }
@@ -264,6 +283,36 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual BigInteger NewSubscriptionPrice { get; set; }
     }
 
+    public partial class SubscriptionRemovedEventDTO : SubscriptionRemovedEventDTOBase { }
+
+    [Event("SubscriptionRemoved")]
+    public class SubscriptionRemovedEventDTOBase : IEventDTO
+    {
+        [Parameter("bytes32", "subscriber", 1, true )]
+        public virtual byte[] Subscriber { get; set; }
+    }
+
+    public partial class SubscriptionRenewedEventDTO : SubscriptionRenewedEventDTOBase { }
+
+    [Event("SubscriptionRenewed")]
+    public class SubscriptionRenewedEventDTOBase : IEventDTO
+    {
+        [Parameter("bytes32", "subscriber", 1, true )]
+        public virtual byte[] Subscriber { get; set; }
+        [Parameter("uint256", "startTime", 2, true )]
+        public virtual BigInteger StartTime { get; set; }
+        [Parameter("uint256", "endTime", 3, true )]
+        public virtual BigInteger EndTime { get; set; }
+        [Parameter("uint256", "nonce", 4, false )]
+        public virtual BigInteger Nonce { get; set; }
+        [Parameter("address", "payer", 5, false )]
+        public virtual string Payer { get; set; }
+        [Parameter("uint256", "subscriptionPrice", 6, false )]
+        public virtual BigInteger SubscriptionPrice { get; set; }
+        [Parameter("uint256", "registryFeeShare", 7, false )]
+        public virtual BigInteger RegistryFeeShare { get; set; }
+    }
+
     public partial class SubscriptionRevokedEventDTO : SubscriptionRevokedEventDTOBase { }
 
     [Event("SubscriptionRevoked")]
@@ -271,6 +320,34 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
     {
         [Parameter("bytes32", "subscriber", 1, true )]
         public virtual byte[] Subscriber { get; set; }
+        [Parameter("uint256", "nonce", 2, true )]
+        public virtual BigInteger Nonce { get; set; }
+        [Parameter("uint256", "endTime", 3, true )]
+        public virtual BigInteger EndTime { get; set; }
+    }
+
+    public partial class ECDSAInvalidSignatureError : ECDSAInvalidSignatureErrorBase { }
+    [Error("ECDSAInvalidSignature")]
+    public class ECDSAInvalidSignatureErrorBase : IErrorDTO
+    {
+    }
+
+    public partial class ECDSAInvalidSignatureLengthError : ECDSAInvalidSignatureLengthErrorBase { }
+
+    [Error("ECDSAInvalidSignatureLength")]
+    public class ECDSAInvalidSignatureLengthErrorBase : IErrorDTO
+    {
+        [Parameter("uint256", "length", 1)]
+        public virtual BigInteger Length { get; set; }
+    }
+
+    public partial class ECDSAInvalidSignatureSError : ECDSAInvalidSignatureSErrorBase { }
+
+    [Error("ECDSAInvalidSignatureS")]
+    public class ECDSAInvalidSignatureSErrorBase : IErrorDTO
+    {
+        [Parameter("bytes32", "s", 1)]
+        public virtual byte[] S { get; set; }
     }
 
     public partial class InsufficientFundsError : InsufficientFundsErrorBase { }
@@ -282,6 +359,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
     public partial class InvalidOwnerError : InvalidOwnerErrorBase { }
     [Error("InvalidOwner")]
     public class InvalidOwnerErrorBase : IErrorDTO
+    {
+    }
+
+    public partial class InvalidSignatureError : InvalidSignatureErrorBase { }
+    [Error("InvalidSignature")]
+    public class InvalidSignatureErrorBase : IErrorDTO
     {
     }
 

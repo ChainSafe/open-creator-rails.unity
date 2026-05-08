@@ -28,7 +28,9 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         [SerializeField] private int _chainId;
 
-        private readonly Eip712TypedDataSigner _signer = new Eip712TypedDataSigner();
+        private readonly Eip712TypedDataSigner _typedDataSigner = new Eip712TypedDataSigner();
+        
+        private readonly EthereumMessageSigner _messageSigner =  new EthereumMessageSigner();
 
         public UniTask InitializeAsync()
         {
@@ -52,9 +54,16 @@ namespace Io.ChainSafe.OpenCreatorRails
             return UniTask.FromResult(web3);
         }
 
+        public EthECDSASignature SignMessage(byte[] message)
+        {
+            string signature = _messageSigner.Sign(message, Wallet.GetEthereumKey(ConnectedAccountIndex));
+
+            return EthECDSASignatureFactory.ExtractECDSASignature(signature);
+        }
+
         public EthECDSASignature SignTypedData<T, TDomain>(T message, TypedData<TDomain> typedData)
         {
-            string signature = _signer.SignTypedDataV4(message, typedData, Wallet.GetEthereumKey(ConnectedAccountIndex));
+            string signature = _typedDataSigner.SignTypedDataV4(message, typedData, Wallet.GetEthereumKey(ConnectedAccountIndex));
 
             return EthECDSASignatureFactory.ExtractECDSASignature(signature);
         }
