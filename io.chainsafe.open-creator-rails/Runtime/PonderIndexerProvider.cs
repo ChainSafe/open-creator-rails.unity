@@ -82,7 +82,7 @@ limit: 1)
     }}
 }}
 ");
-             JToken asset = response["assetEntitys"]?["items"]?.Values<JToken>().First() ?? throw new InvalidOperationException();
+             JToken asset = response["assets"]?["items"]?.Values<JToken>().First() ?? throw new InvalidOperationException();
              
              EthereumAddress address = new EthereumAddress(asset.Value<string>("address"));
              BigInteger subscriptionPrice = BigInteger.Parse(asset.Value<string>("subscriptionPrice"));

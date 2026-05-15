@@ -59,5 +59,8 @@
         "com.cysharp.unitask"
       ]
     }
+  ],
+  "testables": [
+    "io.chainsafe.open-creator-rails"
   ]
 }

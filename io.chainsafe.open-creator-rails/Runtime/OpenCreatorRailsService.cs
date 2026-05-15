@@ -59,20 +59,6 @@ namespace Io.ChainSafe.OpenCreatorRails
             await Assets.ForEachAsync(asset => !connectedHandlers.Contains(asset) ? asset.Connected(Web3) : UniTask.CompletedTask);
         }
 
-        public async UniTask<IAsset> AddAsset(string assetId, EthereumAddress registryAddress)
-        {
-            Asset asset = new Asset(assetId, registryAddress);
-            
-            _assets.Add(asset);
-
-            if (Web3 != null)
-            {
-                await asset.Connected(Web3);
-            }
-            
-            return asset;
-        }
-
         public bool TryGetAsset(string assetId, out IAsset asset, EthereumAddress? registryAddress = null)
         {
             asset = Assets.FirstOrDefault(asset => asset.AssetId == assetId && (registryAddress == null || registryAddress.Value == asset.RegistryAddress));

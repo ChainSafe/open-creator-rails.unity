@@ -23,8 +23,7 @@ using UnityEngine;
 
 namespace Io.ChainSafe.OpenCreatorRails
 {
-    [Serializable]
-    public class Asset : IAsset
+    public class Asset : MonoBehaviour, IAsset
     {
         [field: SerializeField] public EthereumAddress RegistryAddress { get; private set; }
 
@@ -52,13 +51,6 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         private TypedData<Domain> _typedData;
 
-        public Asset(string assetId, EthereumAddress registryAddress)
-        {
-            AssetId = assetId;
-            
-            RegistryAddress = registryAddress;
-        }
-        
         public async UniTask Connected(Web3 web3)
         {
             AssetDto assetDto =

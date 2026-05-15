@@ -119,6 +119,53 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &144669459
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 144669461}
+  - component: {fileID: 144669460}
+  m_Layer: 0
+  m_Name: DefaultAsset_0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &144669460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 144669459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f186a88c5868487a91616782cf2051d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: io.chainsafe.open-creator-rails.runtime::Io.ChainSafe.OpenCreatorRails.Asset
+  <RegistryAddress>k__BackingField:
+    <Value>k__BackingField: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+  <AssetId>k__BackingField: default_asset_id_0
+--- !u!4 &144669461
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 144669459}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &442419976
 GameObject:
   m_ObjectHideFlags: 0
@@ -320,15 +367,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.OpenCreatorRailsService
   _assets:
-  - <RegistryAddress>k__BackingField:
-      <Value>k__BackingField: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
-    <AssetId>k__BackingField: default_asset_id_0
-  - <RegistryAddress>k__BackingField:
-      <Value>k__BackingField: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
-    <AssetId>k__BackingField: default_asset_id_1
-  - <RegistryAddress>k__BackingField:
-      <Value>k__BackingField: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
-    <AssetId>k__BackingField: default_asset_id_2
+  - {fileID: 144669460}
+  - {fileID: 721578587}
+  - {fileID: 1919229789}
 --- !u!114 &462771278
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -342,6 +383,53 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.PollingEventHandler
   _pollingInterval: 12
+--- !u!1 &721578586
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 721578588}
+  - component: {fileID: 721578587}
+  m_Layer: 0
+  m_Name: DefaultAsset_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &721578587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 721578586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f186a88c5868487a91616782cf2051d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: io.chainsafe.open-creator-rails.runtime::Io.ChainSafe.OpenCreatorRails.Asset
+  <RegistryAddress>k__BackingField:
+    <Value>k__BackingField: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+  <AssetId>k__BackingField: default_asset_id_1
+--- !u!4 &721578588
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 721578586}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &929338759
 GameObject:
   m_ObjectHideFlags: 0
@@ -944,6 +1032,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1919229788
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1919229790}
+  - component: {fileID: 1919229789}
+  m_Layer: 0
+  m_Name: DefaultAsset_2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1919229789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1919229788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f186a88c5868487a91616782cf2051d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: io.chainsafe.open-creator-rails.runtime::Io.ChainSafe.OpenCreatorRails.Asset
+  <RegistryAddress>k__BackingField:
+    <Value>k__BackingField: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+  <AssetId>k__BackingField: default_asset_id_2
+--- !u!4 &1919229790
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1919229788}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -953,3 +1088,6 @@ SceneRoots:
   - {fileID: 462771274}
   - {fileID: 1562143682}
   - {fileID: 929338763}
+  - {fileID: 144669461}
+  - {fileID: 721578588}
+  - {fileID: 1919229790}
