@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Configure Git
+      - name: Run
         env:
           GH_TOKEN: ${{ github.token }}
           GIT_USERNAME: ${{ github.actor }}
