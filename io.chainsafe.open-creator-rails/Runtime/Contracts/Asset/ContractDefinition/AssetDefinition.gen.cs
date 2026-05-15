@@ -28,9 +28,11 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual byte[] AssetId { get; set; }
         [Parameter("uint256", "_subscriptionPrice", 2)]
         public virtual BigInteger SubscriptionPrice { get; set; }
-        [Parameter("address", "_tokenAddress", 3)]
+        [Parameter("uint256", "_subscriptionDuration", 3)]
+        public virtual BigInteger SubscriptionDuration { get; set; }
+        [Parameter("address", "_tokenAddress", 4)]
         public virtual string TokenAddress { get; set; }
-        [Parameter("address", "_owner", 4)]
+        [Parameter("address", "_owner", 5)]
         public virtual string Owner { get; set; }
     }
 
@@ -65,7 +67,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
 
     public partial class ClaimRegistryFeeFunction : ClaimRegistryFeeFunctionBase { }
 
-    [Function("claimRegistryFee", "uint256")]
+    [Function("claimRegistryFee", typeof(ClaimRegistryFeeOutputDTO))]
     public class ClaimRegistryFeeFunctionBase : FunctionMessage
     {
         [Parameter("bytes32", "subscriber", 1)]
@@ -97,10 +99,18 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
 
     }
 
-    public partial class GetSubscriptionFunction : GetSubscriptionFunctionBase { }
+    public partial class GetSubscriptionDurationFunction : GetSubscriptionDurationFunctionBase { }
 
-    [Function("getSubscription", "uint256")]
-    public class GetSubscriptionFunctionBase : FunctionMessage
+    [Function("getSubscriptionDuration", "uint256")]
+    public class GetSubscriptionDurationFunctionBase : FunctionMessage
+    {
+
+    }
+
+    public partial class GetSubscriptionExpirationFunction : GetSubscriptionExpirationFunctionBase { }
+
+    [Function("getSubscriptionExpiration", "uint256")]
+    public class GetSubscriptionExpirationFunctionBase : FunctionMessage
     {
         [Parameter("bytes32", "subscriber", 1)]
         public virtual byte[] Subscriber { get; set; }
@@ -111,8 +121,17 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
     [Function("getSubscriptionPrice", "uint256")]
     public class GetSubscriptionPriceFunctionBase : FunctionMessage
     {
-        [Parameter("uint256", "duration", 1)]
-        public virtual BigInteger Duration { get; set; }
+        [Parameter("uint256", "count", 1)]
+        public virtual BigInteger Count { get; set; }
+    }
+
+    public partial class GetSubscriptionPriceAndDurationFunction : GetSubscriptionPriceAndDurationFunctionBase { }
+
+    [Function("getSubscriptionPriceAndDuration", typeof(GetSubscriptionPriceAndDurationOutputDTO))]
+    public class GetSubscriptionPriceAndDurationFunctionBase : FunctionMessage
+    {
+        [Parameter("uint256", "count", 1)]
+        public virtual BigInteger Count { get; set; }
     }
 
     public partial class GetTokenAddressFunction : GetTokenAddressFunctionBase { }
@@ -123,10 +142,28 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
 
     }
 
+    public partial class IsSubscriberRevokedFunction : IsSubscriberRevokedFunctionBase { }
+
+    [Function("isSubscriberRevoked", "bool")]
+    public class IsSubscriberRevokedFunctionBase : FunctionMessage
+    {
+        [Parameter("bytes32", "subscriber", 1)]
+        public virtual byte[] Subscriber { get; set; }
+    }
+
     public partial class IsSubscriptionActiveFunction : IsSubscriptionActiveFunctionBase { }
 
     [Function("isSubscriptionActive", "bool")]
     public class IsSubscriptionActiveFunctionBase : FunctionMessage
+    {
+        [Parameter("bytes32", "subscriber", 1)]
+        public virtual byte[] Subscriber { get; set; }
+    }
+
+    public partial class IsSubscriptionExpiredFunction : IsSubscriptionExpiredFunctionBase { }
+
+    [Function("isSubscriptionExpired", "bool")]
+    public class IsSubscriptionExpiredFunctionBase : FunctionMessage
     {
         [Parameter("bytes32", "subscriber", 1)]
         public virtual byte[] Subscriber { get; set; }
@@ -177,8 +214,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual string Payer { get; set; }
         [Parameter("address", "spender", 3)]
         public virtual string Spender { get; set; }
-        [Parameter("uint256", "value", 4)]
-        public virtual BigInteger Value { get; set; }
+        [Parameter("uint256", "count", 4)]
+        public virtual BigInteger Count { get; set; }
         [Parameter("uint256", "deadline", 5)]
         public virtual BigInteger Deadline { get; set; }
         [Parameter("uint8", "v", 6)]
@@ -198,6 +235,15 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual string NewOwner { get; set; }
     }
 
+    public partial class UnrevokeSubscriptionFunction : UnrevokeSubscriptionFunctionBase { }
+
+    [Function("unrevokeSubscription")]
+    public class UnrevokeSubscriptionFunctionBase : FunctionMessage
+    {
+        [Parameter("bytes32", "subscriber", 1)]
+        public virtual byte[] Subscriber { get; set; }
+    }
+
     public partial class CreatorFeeClaimedEventDTO : CreatorFeeClaimedEventDTOBase { }
 
     [Event("CreatorFeeClaimed")]
@@ -207,6 +253,10 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual byte[] Subscriber { get; set; }
         [Parameter("uint256", "amount", 2, false )]
         public virtual BigInteger Amount { get; set; }
+        [Parameter("uint256", "claimedAtTimestamp", 3, true )]
+        public virtual BigInteger ClaimedAtTimestamp { get; set; }
+        [Parameter("uint256", "claimedAtNonce", 4, true )]
+        public virtual BigInteger ClaimedAtNonce { get; set; }
     }
 
     public partial class CreatorFeeClaimedBatchEventDTO : CreatorFeeClaimedBatchEventDTOBase { }
@@ -326,6 +376,15 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual BigInteger EndTime { get; set; }
     }
 
+    public partial class SubscriptionUnrevokedEventDTO : SubscriptionUnrevokedEventDTOBase { }
+
+    [Event("SubscriptionUnrevoked")]
+    public class SubscriptionUnrevokedEventDTOBase : IEventDTO
+    {
+        [Parameter("bytes32", "subscriber", 1, true )]
+        public virtual byte[] Subscriber { get; set; }
+    }
+
     public partial class ECDSAInvalidSignatureError : ECDSAInvalidSignatureErrorBase { }
     [Error("ECDSAInvalidSignature")]
     public class ECDSAInvalidSignatureErrorBase : IErrorDTO
@@ -374,6 +433,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
     {
     }
 
+    public partial class InvalidSubscriptionDurationError : InvalidSubscriptionDurationErrorBase { }
+    [Error("InvalidSubscriptionDuration")]
+    public class InvalidSubscriptionDurationErrorBase : IErrorDTO
+    {
+    }
+
     public partial class InvalidTokenAddressError : InvalidTokenAddressErrorBase { }
     [Error("InvalidTokenAddress")]
     public class InvalidTokenAddressErrorBase : IErrorDTO
@@ -383,6 +448,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
     public partial class OnlyRegistryUnauthorizedAccountError : OnlyRegistryUnauthorizedAccountErrorBase { }
     [Error("OnlyRegistryUnauthorizedAccount")]
     public class OnlyRegistryUnauthorizedAccountErrorBase : IErrorDTO
+    {
+    }
+
+    public partial class OnlyUnrevokedUnauthorizedSubscriberError : OnlyUnrevokedUnauthorizedSubscriberErrorBase { }
+    [Error("OnlyUnrevokedUnauthorizedSubscriber")]
+    public class OnlyUnrevokedUnauthorizedSubscriberErrorBase : IErrorDTO
     {
     }
 
@@ -425,6 +496,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual string Token { get; set; }
     }
 
+    public partial class SubscriptionAlreadyRevokedError : SubscriptionAlreadyRevokedErrorBase { }
+    [Error("SubscriptionAlreadyRevoked")]
+    public class SubscriptionAlreadyRevokedErrorBase : IErrorDTO
+    {
+    }
+
     public partial class SubscriptionCancellationFailedError : SubscriptionCancellationFailedErrorBase { }
     [Error("SubscriptionCancellationFailed")]
     public class SubscriptionCancellationFailedErrorBase : IErrorDTO
@@ -434,6 +511,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
     public partial class SubscriptionNotFoundError : SubscriptionNotFoundErrorBase { }
     [Error("SubscriptionNotFound")]
     public class SubscriptionNotFoundErrorBase : IErrorDTO
+    {
+    }
+
+    public partial class SubscriptionNotRevokedError : SubscriptionNotRevokedErrorBase { }
+    [Error("SubscriptionNotRevoked")]
+    public class SubscriptionNotRevokedErrorBase : IErrorDTO
     {
     }
 
@@ -449,7 +532,18 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
 
 
 
+    public partial class ClaimRegistryFeeOutputDTO : ClaimRegistryFeeOutputDTOBase { }
 
+    [FunctionOutput]
+    public class ClaimRegistryFeeOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "claimedAmount", 1)]
+        public virtual BigInteger ClaimedAmount { get; set; }
+        [Parameter("uint256", "claimedAtTimestamp", 2)]
+        public virtual BigInteger ClaimedAtTimestamp { get; set; }
+        [Parameter("uint256", "claimedAtNonce", 3)]
+        public virtual BigInteger ClaimedAtNonce { get; set; }
+    }
 
 
 
@@ -471,10 +565,19 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual string ReturnValue1 { get; set; }
     }
 
-    public partial class GetSubscriptionOutputDTO : GetSubscriptionOutputDTOBase { }
+    public partial class GetSubscriptionDurationOutputDTO : GetSubscriptionDurationOutputDTOBase { }
 
     [FunctionOutput]
-    public class GetSubscriptionOutputDTOBase : IFunctionOutputDTO 
+    public class GetSubscriptionDurationOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "", 1)]
+        public virtual BigInteger ReturnValue1 { get; set; }
+    }
+
+    public partial class GetSubscriptionExpirationOutputDTO : GetSubscriptionExpirationOutputDTOBase { }
+
+    [FunctionOutput]
+    public class GetSubscriptionExpirationOutputDTOBase : IFunctionOutputDTO 
     {
         [Parameter("uint256", "", 1)]
         public virtual BigInteger ReturnValue1 { get; set; }
@@ -489,6 +592,17 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual BigInteger ReturnValue1 { get; set; }
     }
 
+    public partial class GetSubscriptionPriceAndDurationOutputDTO : GetSubscriptionPriceAndDurationOutputDTOBase { }
+
+    [FunctionOutput]
+    public class GetSubscriptionPriceAndDurationOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "price", 1)]
+        public virtual BigInteger Price { get; set; }
+        [Parameter("uint256", "duration", 2)]
+        public virtual BigInteger Duration { get; set; }
+    }
+
     public partial class GetTokenAddressOutputDTO : GetTokenAddressOutputDTOBase { }
 
     [FunctionOutput]
@@ -498,10 +612,28 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         public virtual string ReturnValue1 { get; set; }
     }
 
+    public partial class IsSubscriberRevokedOutputDTO : IsSubscriberRevokedOutputDTOBase { }
+
+    [FunctionOutput]
+    public class IsSubscriberRevokedOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("bool", "", 1)]
+        public virtual bool ReturnValue1 { get; set; }
+    }
+
     public partial class IsSubscriptionActiveOutputDTO : IsSubscriptionActiveOutputDTOBase { }
 
     [FunctionOutput]
     public class IsSubscriptionActiveOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("bool", "", 1)]
+        public virtual bool ReturnValue1 { get; set; }
+    }
+
+    public partial class IsSubscriptionExpiredOutputDTO : IsSubscriptionExpiredOutputDTOBase { }
+
+    [FunctionOutput]
+    public class IsSubscriptionExpiredOutputDTOBase : IFunctionOutputDTO 
     {
         [Parameter("bool", "", 1)]
         public virtual bool ReturnValue1 { get; set; }
@@ -515,6 +647,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.ContractDefinition
         [Parameter("address", "", 1)]
         public virtual string ReturnValue1 { get; set; }
     }
+
+
 
 
 

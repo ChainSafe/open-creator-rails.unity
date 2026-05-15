@@ -89,6 +89,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             Service.SubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(SubscriptionPriceUpdated);
             Service.SubscribeToEvent<SubscriptionCancelledEventDTO>(SubscriptionCancelled);
             Service.SubscribeToEvent<SubscriptionRevokedEventDTO>(SubscriptionRevoked);
+            Service.SubscribeToEvent<SubscriptionUnrevokedEventDTO>(SubscriptionUnrevoked);
             Service.SubscribeToEvent<SubscriptionRemovedEventDTO>(SubscriptionRemoved);
             Service.SubscribeToEvent<OwnershipTransferredEventDTO>(OwnershipTransferred);
         }
@@ -103,20 +104,34 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
 
-        public async UniTask<bool> HasAccess(string subscriberId)
+        public async UniTask<DateTime> GetSubscriptionExpiration(string subscriberId)
         {
             byte[] subscriberHashBytes = subscriberId.ToSubscriberIdHash();
             
-            return await Service.IsSubscriptionActiveQueryAsync(subscriberHashBytes);
-        }
-
-        public async UniTask<DateTime> GetSubscriptionEndTime(string subscriberId)
-        {
-            byte[] subscriberHashBytes = subscriberId.ToSubscriberIdHash();
-            
-            BigInteger endTime = await Service.GetSubscriptionQueryAsync(subscriberHashBytes);
+            BigInteger endTime = await Service.GetSubscriptionExpirationQueryAsync(subscriberHashBytes);
 
             return endTime.FromUnixTimeToLocalDateTime();
+        }
+
+        public async UniTask<bool> IsSubscriptionExpired(string subscriberId)
+        {
+            byte[]  subscriberHashBytes = subscriberId.ToSubscriberIdHash();
+
+            return await Service.IsSubscriptionExpiredQueryAsync(subscriberHashBytes);
+        }
+
+        public async UniTask<bool> IsSubscriberRevoked(string subscriberId)
+        {
+            byte[]  subscriberHashBytes = subscriberId.ToSubscriberIdHash();
+
+            return await Service.IsSubscriberRevokedQueryAsync(subscriberHashBytes);
+        }
+
+        public async UniTask<bool> IsSubscriptionActive(string subscriberId)
+        {
+            byte[]  subscriberHashBytes = subscriberId.ToSubscriberIdHash();
+
+            return await Service.IsSubscriptionActiveQueryAsync(subscriberHashBytes);
         }
 
         public async UniTask<DateTime> Subscribe(string subscriberId, TimeSpan duration)
@@ -253,6 +268,17 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
 
+        public async UniTask UnrevokeSubscription(string subscriberId)
+        {
+            byte[] subscriberHashBytes = subscriberId.ToSubscriberIdHash();
+
+            var receipt = await Service.UnrevokeSubscriptionRequestAndWaitForReceiptAsync(subscriberHashBytes);
+            
+            SubscriptionUnrevokedEventDTO @event = receipt.DecodeAllEvents<SubscriptionUnrevokedEventDTO>()[0].Event;
+            
+            SubscriptionUnrevoked(@event);
+        }
+
         private bool SubscriptionRemoved(TransactionReceipt receipt)
         {
             SubscriptionRemovedEventDTO @event = receipt.DecodeAllEvents<SubscriptionRemovedEventDTO>().FirstOrDefault()?.Event;
@@ -281,7 +307,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             // New subscriber
             if (!Subscriptions.Exists(subscription => subscription.SubscriberIdHash == subscriberIdHash))
             {
-                Subscriptions.Add(new SubscriptionDto(subscriberIdHash, BigInteger.Zero, startTime, endTime, subscriptionPrice, registryFeeShare, payer));
+                Subscriptions.Add(new SubscriptionDto(subscriberIdHash, BigInteger.Zero, startTime, endTime, subscriptionPrice, registryFeeShare, payer, false, false, true));
             }
         }
         
@@ -298,7 +324,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             // New nonce
             if (!Subscriptions.Exists(subscription => subscription.SubscriberIdHash == subscriberIdHash && subscription.Nonce == nonce))
             {
-                Subscriptions.Add(new SubscriptionDto(subscriberIdHash, nonce, startTime, endTime, subscriptionPrice, registryFeeShare, payer));
+                Subscriptions.Add(new SubscriptionDto(subscriberIdHash, nonce, startTime, endTime, subscriptionPrice, registryFeeShare, payer, false, false, true));
             }
         }
 
@@ -343,6 +369,14 @@ namespace Io.ChainSafe.OpenCreatorRails
             DateTime endTime = @event.EndTime.FromUnixTimeToLocalDateTime();
             
             SubscriptionCancelledOrRevoked(subscriberIdHash, @event.Nonce, endTime);
+            
+            List<int> indexes = Subscriptions.Where(subscription => subscription.SubscriberIdHash == subscriberIdHash)
+                .Select((_, index) => index).ToList();
+            
+            foreach (int index in indexes)
+            {
+                Subscriptions[index] = Subscriptions[index].Revoked();
+            }
         }
         
         private void SubscriptionRemoved(SubscriptionRemovedEventDTO @event)
@@ -352,6 +386,19 @@ namespace Io.ChainSafe.OpenCreatorRails
             Subscriptions.RemoveAll(subscription => subscription.SubscriberIdHash == subscriberIdHash);
         }
 
+        private void SubscriptionUnrevoked(SubscriptionUnrevokedEventDTO @event)
+        {
+            string subscriberIdHash = @event.Subscriber.ToHex(true);
+
+            List<int> indexes = Subscriptions.Where(subscription => subscription.SubscriberIdHash == subscriberIdHash)
+                .Select((_, index) => index).ToList();
+            
+            foreach (int index in indexes)
+            {
+                Subscriptions[index] = Subscriptions[index].Unrevoked();
+            }
+        }
+        
         private void OwnershipTransferred(OwnershipTransferredEventDTO @event)
         {
             EthereumAddress newOwner = new EthereumAddress(@event.NewOwner);

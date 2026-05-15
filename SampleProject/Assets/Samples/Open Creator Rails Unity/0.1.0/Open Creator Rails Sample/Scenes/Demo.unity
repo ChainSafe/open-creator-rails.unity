@@ -306,7 +306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce696fad3df647c0b4e40474ef364fd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.PonderIndexerProvider
-  <IndexerUrl>k__BackingField: http://localhost:42069/
+  <IndexerUrl>k__BackingField: http://localhost:42069/v2/graphql
 --- !u!114 &462771277
 MonoBehaviour:
   m_ObjectHideFlags: 0

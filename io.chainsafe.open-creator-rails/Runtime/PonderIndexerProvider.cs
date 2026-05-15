@@ -52,7 +52,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         {
             JToken response = await Query<JToken>($@"
 {{
-    assetEntitys(
+    assets(
         where: {{
             assetId: ""{assetIdHash}""
             registryAddress: ""{registryAddress}""
@@ -73,6 +73,9 @@ limit: 1)
                     subscriptionPrice
                     registryFeeShare
                     payer
+                    isExpired
+                    isRevoked
+                    isActive
                 }}
             }}
         }}
@@ -95,8 +98,11 @@ limit: 1)
                  BigInteger registryFeeShare = BigInteger.Parse(subscription.Value<string>("registryFeeShare"));
                  BigInteger subscribedAtPrice = BigInteger.Parse(subscription.Value<string>("subscriptionPrice"));
                  EthereumAddress payer = new EthereumAddress(subscription.Value<string>("payer"));
+                 bool isExpired = subscription.Value<bool>("isExpired");
+                 bool isRevoked = subscription.Value<bool>("isRevoked");
+                 bool isActive = subscription.Value<bool>("isActive");
                  
-                 return new SubscriptionDto(subscriberIdHash, nonce, startTime, endTime, subscribedAtPrice, registryFeeShare, payer);
+                 return new SubscriptionDto(subscriberIdHash, nonce, startTime, endTime, subscribedAtPrice, registryFeeShare, payer, isExpired, isRevoked, isActive);
              }).ToList();
 
              return new AssetDto(address, subscriptionPrice, owner, tokenAddress, subscriptions);
