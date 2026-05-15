@@ -1,5 +1,9 @@
+using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Cysharp.Threading.Tasks;
+using Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.ContractDefinition;
+using Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service;
 using Io.ChainSafe.OpenCreatorRails.Utils;
 using Nethereum.ABI;
 using Nethereum.Web3;
@@ -18,12 +22,12 @@ namespace Io.ChainSafe.OpenCreatorRails
         public IIndexerProvider IndexerProvider { get; private set; }
         
         public IEventHandler EventHandler { get; private set; }
-
+        
         public Web3 Web3 { get; private set; }
 
-        [SerializeField] private Asset[] _assets;
+        [SerializeField] private List<Asset> _assets;
 
-        public Asset[] Assets => _assets;
+        public List<IAsset> Assets => _assets.ConvertAll(asset => (IAsset) asset);
 
         private async void Awake()
         {
@@ -48,18 +52,31 @@ namespace Io.ChainSafe.OpenCreatorRails
         {
             Web3 = await WalletProvider.Connect(index);
 
-            await GetComponents<IWeb3Initialized>().ForEachAsync(handler => handler.Connected(Web3));
+            IWeb3Initialized[] connectedHandlers = GetComponents<IWeb3Initialized>();
             
-            await Assets.ForEachAsync(asset => asset.Connected(Web3));
+            await connectedHandlers.ForEachAsync(handler => handler.Connected(Web3));
+            
+            await Assets.ForEachAsync(asset => !connectedHandlers.Contains(asset) ? asset.Connected(Web3) : UniTask.CompletedTask);
         }
 
-        public bool TryGetAsset(string assetId, out Asset asset, EthereumAddress? registryAddress = null)
+        public bool TryGetAsset(string assetId, out IAsset asset, EthereumAddress? registryAddress = null)
         {
-            asset = _assets.FirstOrDefault(asset => asset.AssetId == assetId && (registryAddress == null || registryAddress.Value == asset.RegistryAddress));
+            asset = Assets.FirstOrDefault(asset => asset.AssetId == assetId && (registryAddress == null || registryAddress.Value == asset.RegistryAddress));
             
             return asset != null;
         }
 
+        public static async UniTask<AssetRegistryService> DeployAssetRegistry(BigInteger registryFeeShare)
+        {
+            return await AssetRegistryService.DeployContractAndGetServiceAsync(Instance.Web3,
+                new AssetRegistryDeployment { RegistryFeeShare = registryFeeShare });
+        }
+        
+        public static AssetRegistryService GetAssetRegistry(EthereumAddress address)
+        {
+            return new AssetRegistryService(Instance.Web3, address.Value);
+        }
+        
         private async void OnDestroy()
         {
             Instance = null;

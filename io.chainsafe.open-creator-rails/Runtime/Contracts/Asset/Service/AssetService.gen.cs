@@ -56,18 +56,20 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelSubscriptionFunction, cancellationToken);
         }
 
-        public virtual Task<string> CancelSubscriptionRequestAsync(byte[] subscriber)
+        public virtual Task<string> CancelSubscriptionRequestAsync(string subscriberId, byte[] signature)
         {
             var cancelSubscriptionFunction = new CancelSubscriptionFunction();
-                cancelSubscriptionFunction.Subscriber = subscriber;
+                cancelSubscriptionFunction.SubscriberId = subscriberId;
+                cancelSubscriptionFunction.Signature = signature;
             
              return ContractHandler.SendRequestAsync(cancelSubscriptionFunction);
         }
 
-        public virtual Task<TransactionReceipt> CancelSubscriptionRequestAndWaitForReceiptAsync(byte[] subscriber, CancellationTokenSource cancellationToken = null)
+        public virtual Task<TransactionReceipt> CancelSubscriptionRequestAndWaitForReceiptAsync(string subscriberId, byte[] signature, CancellationTokenSource cancellationToken = null)
         {
             var cancelSubscriptionFunction = new CancelSubscriptionFunction();
-                cancelSubscriptionFunction.Subscriber = subscriber;
+                cancelSubscriptionFunction.SubscriberId = subscriberId;
+                cancelSubscriptionFunction.Signature = signature;
             
              return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelSubscriptionFunction, cancellationToken);
         }
@@ -198,18 +200,29 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
             return ContractHandler.QueryAsync<GetRegistryAddressFunction, string>(null, blockParameter);
         }
 
-        public Task<BigInteger> GetSubscriptionQueryAsync(GetSubscriptionFunction getSubscriptionFunction, BlockParameter blockParameter = null)
+        public Task<BigInteger> GetSubscriptionDurationQueryAsync(GetSubscriptionDurationFunction getSubscriptionDurationFunction, BlockParameter blockParameter = null)
         {
-            return ContractHandler.QueryAsync<GetSubscriptionFunction, BigInteger>(getSubscriptionFunction, blockParameter);
+            return ContractHandler.QueryAsync<GetSubscriptionDurationFunction, BigInteger>(getSubscriptionDurationFunction, blockParameter);
         }
 
         
-        public virtual Task<BigInteger> GetSubscriptionQueryAsync(byte[] subscriber, BlockParameter blockParameter = null)
+        public virtual Task<BigInteger> GetSubscriptionDurationQueryAsync(BlockParameter blockParameter = null)
         {
-            var getSubscriptionFunction = new GetSubscriptionFunction();
-                getSubscriptionFunction.Subscriber = subscriber;
+            return ContractHandler.QueryAsync<GetSubscriptionDurationFunction, BigInteger>(null, blockParameter);
+        }
+
+        public Task<BigInteger> GetSubscriptionExpirationQueryAsync(GetSubscriptionExpirationFunction getSubscriptionExpirationFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<GetSubscriptionExpirationFunction, BigInteger>(getSubscriptionExpirationFunction, blockParameter);
+        }
+
+        
+        public virtual Task<BigInteger> GetSubscriptionExpirationQueryAsync(byte[] subscriber, BlockParameter blockParameter = null)
+        {
+            var getSubscriptionExpirationFunction = new GetSubscriptionExpirationFunction();
+                getSubscriptionExpirationFunction.Subscriber = subscriber;
             
-            return ContractHandler.QueryAsync<GetSubscriptionFunction, BigInteger>(getSubscriptionFunction, blockParameter);
+            return ContractHandler.QueryAsync<GetSubscriptionExpirationFunction, BigInteger>(getSubscriptionExpirationFunction, blockParameter);
         }
 
         public Task<BigInteger> GetSubscriptionPriceQueryAsync(GetSubscriptionPriceFunction getSubscriptionPriceFunction, BlockParameter blockParameter = null)
@@ -218,12 +231,25 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
         }
 
         
-        public virtual Task<BigInteger> GetSubscriptionPriceQueryAsync(BigInteger duration, BlockParameter blockParameter = null)
+        public virtual Task<BigInteger> GetSubscriptionPriceQueryAsync(BigInteger count, BlockParameter blockParameter = null)
         {
             var getSubscriptionPriceFunction = new GetSubscriptionPriceFunction();
-                getSubscriptionPriceFunction.Duration = duration;
+                getSubscriptionPriceFunction.Count = count;
             
             return ContractHandler.QueryAsync<GetSubscriptionPriceFunction, BigInteger>(getSubscriptionPriceFunction, blockParameter);
+        }
+
+        public virtual Task<GetSubscriptionPriceAndDurationOutputDTO> GetSubscriptionPriceAndDurationQueryAsync(GetSubscriptionPriceAndDurationFunction getSubscriptionPriceAndDurationFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryDeserializingToObjectAsync<GetSubscriptionPriceAndDurationFunction, GetSubscriptionPriceAndDurationOutputDTO>(getSubscriptionPriceAndDurationFunction, blockParameter);
+        }
+
+        public virtual Task<GetSubscriptionPriceAndDurationOutputDTO> GetSubscriptionPriceAndDurationQueryAsync(BigInteger count, BlockParameter blockParameter = null)
+        {
+            var getSubscriptionPriceAndDurationFunction = new GetSubscriptionPriceAndDurationFunction();
+                getSubscriptionPriceAndDurationFunction.Count = count;
+            
+            return ContractHandler.QueryDeserializingToObjectAsync<GetSubscriptionPriceAndDurationFunction, GetSubscriptionPriceAndDurationOutputDTO>(getSubscriptionPriceAndDurationFunction, blockParameter);
         }
 
         public Task<string> GetTokenAddressQueryAsync(GetTokenAddressFunction getTokenAddressFunction, BlockParameter blockParameter = null)
@@ -235,6 +261,20 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
         public virtual Task<string> GetTokenAddressQueryAsync(BlockParameter blockParameter = null)
         {
             return ContractHandler.QueryAsync<GetTokenAddressFunction, string>(null, blockParameter);
+        }
+
+        public Task<bool> IsSubscriberRevokedQueryAsync(IsSubscriberRevokedFunction isSubscriberRevokedFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<IsSubscriberRevokedFunction, bool>(isSubscriberRevokedFunction, blockParameter);
+        }
+
+        
+        public virtual Task<bool> IsSubscriberRevokedQueryAsync(byte[] subscriber, BlockParameter blockParameter = null)
+        {
+            var isSubscriberRevokedFunction = new IsSubscriberRevokedFunction();
+                isSubscriberRevokedFunction.Subscriber = subscriber;
+            
+            return ContractHandler.QueryAsync<IsSubscriberRevokedFunction, bool>(isSubscriberRevokedFunction, blockParameter);
         }
 
         public Task<bool> IsSubscriptionActiveQueryAsync(IsSubscriptionActiveFunction isSubscriptionActiveFunction, BlockParameter blockParameter = null)
@@ -249,6 +289,20 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
                 isSubscriptionActiveFunction.Subscriber = subscriber;
             
             return ContractHandler.QueryAsync<IsSubscriptionActiveFunction, bool>(isSubscriptionActiveFunction, blockParameter);
+        }
+
+        public Task<bool> IsSubscriptionExpiredQueryAsync(IsSubscriptionExpiredFunction isSubscriptionExpiredFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<IsSubscriptionExpiredFunction, bool>(isSubscriptionExpiredFunction, blockParameter);
+        }
+
+        
+        public virtual Task<bool> IsSubscriptionExpiredQueryAsync(byte[] subscriber, BlockParameter blockParameter = null)
+        {
+            var isSubscriptionExpiredFunction = new IsSubscriptionExpiredFunction();
+                isSubscriptionExpiredFunction.Subscriber = subscriber;
+            
+            return ContractHandler.QueryAsync<IsSubscriptionExpiredFunction, bool>(isSubscriptionExpiredFunction, blockParameter);
         }
 
         public Task<string> OwnerQueryAsync(OwnerFunction ownerFunction, BlockParameter blockParameter = null)
@@ -344,13 +398,13 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(subscribeFunction, cancellationToken);
         }
 
-        public virtual Task<string> SubscribeRequestAsync(byte[] subscriber, string payer, string spender, BigInteger value, BigInteger deadline, byte v, byte[] r, byte[] s)
+        public virtual Task<string> SubscribeRequestAsync(byte[] subscriber, string payer, string spender, BigInteger count, BigInteger deadline, byte v, byte[] r, byte[] s)
         {
             var subscribeFunction = new SubscribeFunction();
                 subscribeFunction.Subscriber = subscriber;
                 subscribeFunction.Payer = payer;
                 subscribeFunction.Spender = spender;
-                subscribeFunction.Value = value;
+                subscribeFunction.Count = count;
                 subscribeFunction.Deadline = deadline;
                 subscribeFunction.V = v;
                 subscribeFunction.R = r;
@@ -359,13 +413,13 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
              return ContractHandler.SendRequestAsync(subscribeFunction);
         }
 
-        public virtual Task<TransactionReceipt> SubscribeRequestAndWaitForReceiptAsync(byte[] subscriber, string payer, string spender, BigInteger value, BigInteger deadline, byte v, byte[] r, byte[] s, CancellationTokenSource cancellationToken = null)
+        public virtual Task<TransactionReceipt> SubscribeRequestAndWaitForReceiptAsync(byte[] subscriber, string payer, string spender, BigInteger count, BigInteger deadline, byte v, byte[] r, byte[] s, CancellationTokenSource cancellationToken = null)
         {
             var subscribeFunction = new SubscribeFunction();
                 subscribeFunction.Subscriber = subscriber;
                 subscribeFunction.Payer = payer;
                 subscribeFunction.Spender = spender;
-                subscribeFunction.Value = value;
+                subscribeFunction.Count = count;
                 subscribeFunction.Deadline = deadline;
                 subscribeFunction.V = v;
                 subscribeFunction.R = r;
@@ -400,6 +454,32 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(transferOwnershipFunction, cancellationToken);
         }
 
+        public virtual Task<string> UnrevokeSubscriptionRequestAsync(UnrevokeSubscriptionFunction unrevokeSubscriptionFunction)
+        {
+             return ContractHandler.SendRequestAsync(unrevokeSubscriptionFunction);
+        }
+
+        public virtual Task<TransactionReceipt> UnrevokeSubscriptionRequestAndWaitForReceiptAsync(UnrevokeSubscriptionFunction unrevokeSubscriptionFunction, CancellationTokenSource cancellationToken = null)
+        {
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(unrevokeSubscriptionFunction, cancellationToken);
+        }
+
+        public virtual Task<string> UnrevokeSubscriptionRequestAsync(byte[] subscriber)
+        {
+            var unrevokeSubscriptionFunction = new UnrevokeSubscriptionFunction();
+                unrevokeSubscriptionFunction.Subscriber = subscriber;
+            
+             return ContractHandler.SendRequestAsync(unrevokeSubscriptionFunction);
+        }
+
+        public virtual Task<TransactionReceipt> UnrevokeSubscriptionRequestAndWaitForReceiptAsync(byte[] subscriber, CancellationTokenSource cancellationToken = null)
+        {
+            var unrevokeSubscriptionFunction = new UnrevokeSubscriptionFunction();
+                unrevokeSubscriptionFunction.Subscriber = subscriber;
+            
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(unrevokeSubscriptionFunction, cancellationToken);
+        }
+
         public override List<Type> GetAllFunctionTypes()
         {
             return new List<Type>
@@ -411,16 +491,21 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
                 typeof(ClaimRegistryFee1Function),
                 typeof(GetAssetIdFunction),
                 typeof(GetRegistryAddressFunction),
-                typeof(GetSubscriptionFunction),
+                typeof(GetSubscriptionDurationFunction),
+                typeof(GetSubscriptionExpirationFunction),
                 typeof(GetSubscriptionPriceFunction),
+                typeof(GetSubscriptionPriceAndDurationFunction),
                 typeof(GetTokenAddressFunction),
+                typeof(IsSubscriberRevokedFunction),
                 typeof(IsSubscriptionActiveFunction),
+                typeof(IsSubscriptionExpiredFunction),
                 typeof(OwnerFunction),
                 typeof(RenounceOwnershipFunction),
                 typeof(RevokeSubscriptionFunction),
                 typeof(SetSubscriptionPriceFunction),
                 typeof(SubscribeFunction),
-                typeof(TransferOwnershipFunction)
+                typeof(TransferOwnershipFunction),
+                typeof(UnrevokeSubscriptionFunction)
             };
         }
 
@@ -429,12 +514,16 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
             return new List<Type>
             {
                 typeof(CreatorFeeClaimedEventDTO),
+                typeof(CreatorFeeClaimedBatchEventDTO),
                 typeof(OwnershipTransferredEventDTO),
                 typeof(SubscriptionAddedEventDTO),
                 typeof(SubscriptionCancelledEventDTO),
                 typeof(SubscriptionExtendedEventDTO),
                 typeof(SubscriptionPriceUpdatedEventDTO),
-                typeof(SubscriptionRevokedEventDTO)
+                typeof(SubscriptionRemovedEventDTO),
+                typeof(SubscriptionRenewedEventDTO),
+                typeof(SubscriptionRevokedEventDTO),
+                typeof(SubscriptionUnrevokedEventDTO)
             };
         }
 
@@ -442,18 +531,26 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
         {
             return new List<Type>
             {
+                typeof(ECDSAInvalidSignatureError),
+                typeof(ECDSAInvalidSignatureLengthError),
+                typeof(ECDSAInvalidSignatureSError),
                 typeof(InsufficientFundsError),
                 typeof(InvalidOwnerError),
+                typeof(InvalidSignatureError),
                 typeof(InvalidSpenderError),
+                typeof(InvalidSubscriptionDurationError),
                 typeof(InvalidTokenAddressError),
                 typeof(OnlyRegistryUnauthorizedAccountError),
+                typeof(OnlyUnrevokedUnauthorizedSubscriberError),
                 typeof(OwnableInvalidOwnerError),
                 typeof(OwnableUnauthorizedAccountError),
                 typeof(PermitFailedError),
                 typeof(ReentrancyGuardReentrantCallError),
                 typeof(SafeERC20FailedOperationError),
+                typeof(SubscriptionAlreadyRevokedError),
                 typeof(SubscriptionCancellationFailedError),
                 typeof(SubscriptionNotFoundError),
+                typeof(SubscriptionNotRevokedError),
                 typeof(SubscriptionRevocationFailedError)
             };
         }

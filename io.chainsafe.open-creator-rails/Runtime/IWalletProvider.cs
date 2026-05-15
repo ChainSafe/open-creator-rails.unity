@@ -17,6 +17,8 @@ namespace Io.ChainSafe.OpenCreatorRails
         
         UniTask<Web3> Connect(int index = 0);
 
+        EthECDSASignature SignMessage(byte[] message);
+        
         EthECDSASignature SignTypedData<T, TDomain>(T message, TypedData<TDomain> typedData);
         
         UniTask Disconnect();

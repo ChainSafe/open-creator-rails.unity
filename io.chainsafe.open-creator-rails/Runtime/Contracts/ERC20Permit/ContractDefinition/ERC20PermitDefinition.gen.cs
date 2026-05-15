@@ -21,7 +21,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.ERC20Permit.ContractDefinition
 
     public class ERC20PermitDeploymentBase : ContractDeploymentMessage
     {
-        public static string BYTECODE = "";
+        public static string BYTECODE = "0x";
         public ERC20PermitDeploymentBase() : base(BYTECODE) { }
         public ERC20PermitDeploymentBase(string byteCode) : base(byteCode) { }
 

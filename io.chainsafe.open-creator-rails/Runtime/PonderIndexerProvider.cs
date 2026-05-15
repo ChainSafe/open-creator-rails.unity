@@ -52,7 +52,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         {
             JToken response = await Query<JToken>($@"
 {{
-    assetEntitys(
+    assets(
         where: {{
             assetId: ""{assetIdHash}""
             registryAddress: ""{registryAddress}""
@@ -67,18 +67,22 @@ limit: 1)
             subscriptions {{
                 items {{
                     subscriber
-                    payer
+                    nonce
                     startTime
                     endTime
+                    subscriptionPrice
+                    registryFeeShare
+                    payer
+                    isExpired
+                    isRevoked
                     isActive
-                    nonce
                 }}
             }}
         }}
     }}
 }}
 ");
-             JToken asset = response["assetEntitys"]?["items"]?.Values<JToken>().First() ?? throw new InvalidOperationException();
+             JToken asset = response["assets"]?["items"]?.Values<JToken>().First() ?? throw new InvalidOperationException();
              
              EthereumAddress address = new EthereumAddress(asset.Value<string>("address"));
              BigInteger subscriptionPrice = BigInteger.Parse(asset.Value<string>("subscriptionPrice"));
@@ -88,13 +92,17 @@ limit: 1)
              List<SubscriptionDto> subscriptions = asset?["subscriptions"]?["items"]?.Values<JToken>().Select(subscription =>
              {
                  string subscriberIdHash = subscription.Value<string>("subscriber");
-                 EthereumAddress payer = new EthereumAddress(subscription.Value<string>("payer"));
+                 BigInteger nonce = BigInteger.Parse(subscription.Value<string>("nonce"));
                  DateTime startTime = DateTimeOffset.FromUnixTimeSeconds(subscription.Value<long>("startTime")).DateTime;
                  DateTime endTime = DateTimeOffset.FromUnixTimeSeconds(subscription.Value<long>("endTime")).DateTime;
+                 BigInteger registryFeeShare = BigInteger.Parse(subscription.Value<string>("registryFeeShare"));
+                 BigInteger subscribedAtPrice = BigInteger.Parse(subscription.Value<string>("subscriptionPrice"));
+                 EthereumAddress payer = new EthereumAddress(subscription.Value<string>("payer"));
+                 bool isExpired = subscription.Value<bool>("isExpired");
+                 bool isRevoked = subscription.Value<bool>("isRevoked");
                  bool isActive = subscription.Value<bool>("isActive");
-                 BigInteger nonce = BigInteger.Parse(subscription.Value<string>("nonce"));
                  
-                 return new SubscriptionDto(subscriberIdHash, payer, startTime, endTime, isActive, nonce);
+                 return new SubscriptionDto(subscriberIdHash, nonce, startTime, endTime, subscribedAtPrice, registryFeeShare, payer, isExpired, isRevoked, isActive);
              }).ToList();
 
              return new AssetDto(address, subscriptionPrice, owner, tokenAddress, subscriptions);

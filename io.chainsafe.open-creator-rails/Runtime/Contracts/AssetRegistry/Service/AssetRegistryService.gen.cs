@@ -60,34 +60,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
             return ContractHandler.QueryAsync<AssetsFunction, string>(assetsFunction, blockParameter);
         }
 
-        public virtual Task<string> CancelSubscriptionRequestAsync(CancelSubscriptionFunction cancelSubscriptionFunction)
-        {
-             return ContractHandler.SendRequestAsync(cancelSubscriptionFunction);
-        }
-
-        public virtual Task<TransactionReceipt> CancelSubscriptionRequestAndWaitForReceiptAsync(CancelSubscriptionFunction cancelSubscriptionFunction, CancellationTokenSource cancellationToken = null)
-        {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelSubscriptionFunction, cancellationToken);
-        }
-
-        public virtual Task<string> CancelSubscriptionRequestAsync(byte[] assetId, byte[] subscriber)
-        {
-            var cancelSubscriptionFunction = new CancelSubscriptionFunction();
-                cancelSubscriptionFunction.AssetId = assetId;
-                cancelSubscriptionFunction.Subscriber = subscriber;
-            
-             return ContractHandler.SendRequestAsync(cancelSubscriptionFunction);
-        }
-
-        public virtual Task<TransactionReceipt> CancelSubscriptionRequestAndWaitForReceiptAsync(byte[] assetId, byte[] subscriber, CancellationTokenSource cancellationToken = null)
-        {
-            var cancelSubscriptionFunction = new CancelSubscriptionFunction();
-                cancelSubscriptionFunction.AssetId = assetId;
-                cancelSubscriptionFunction.Subscriber = subscriber;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelSubscriptionFunction, cancellationToken);
-        }
-
         public virtual Task<string> ClaimRegistryFeeRequestAsync(ClaimRegistryFeeFunction claimRegistryFeeFunction)
         {
              return ContractHandler.SendRequestAsync(claimRegistryFeeFunction);
@@ -154,26 +126,62 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(createAssetFunction, cancellationToken);
         }
 
-        public virtual Task<string> CreateAssetRequestAsync(byte[] assetId, BigInteger subscriptionPrice, string tokenAddress, string owner)
+        public virtual Task<string> CreateAssetRequestAsync(byte[] assetId, BigInteger subscriptionPrice, BigInteger subscriptionDuration, string tokenAddress, string owner)
         {
             var createAssetFunction = new CreateAssetFunction();
                 createAssetFunction.AssetId = assetId;
                 createAssetFunction.SubscriptionPrice = subscriptionPrice;
+                createAssetFunction.SubscriptionDuration = subscriptionDuration;
                 createAssetFunction.TokenAddress = tokenAddress;
                 createAssetFunction.Owner = owner;
             
              return ContractHandler.SendRequestAsync(createAssetFunction);
         }
 
-        public virtual Task<TransactionReceipt> CreateAssetRequestAndWaitForReceiptAsync(byte[] assetId, BigInteger subscriptionPrice, string tokenAddress, string owner, CancellationTokenSource cancellationToken = null)
+        public virtual Task<TransactionReceipt> CreateAssetRequestAndWaitForReceiptAsync(byte[] assetId, BigInteger subscriptionPrice, BigInteger subscriptionDuration, string tokenAddress, string owner, CancellationTokenSource cancellationToken = null)
         {
             var createAssetFunction = new CreateAssetFunction();
                 createAssetFunction.AssetId = assetId;
                 createAssetFunction.SubscriptionPrice = subscriptionPrice;
+                createAssetFunction.SubscriptionDuration = subscriptionDuration;
                 createAssetFunction.TokenAddress = tokenAddress;
                 createAssetFunction.Owner = owner;
             
              return ContractHandler.SendRequestAndWaitForReceiptAsync(createAssetFunction, cancellationToken);
+        }
+
+        public virtual Task<string> EmitRegistryFeeClaimedEventRequestAsync(EmitRegistryFeeClaimedEventFunction emitRegistryFeeClaimedEventFunction)
+        {
+             return ContractHandler.SendRequestAsync(emitRegistryFeeClaimedEventFunction);
+        }
+
+        public virtual Task<TransactionReceipt> EmitRegistryFeeClaimedEventRequestAndWaitForReceiptAsync(EmitRegistryFeeClaimedEventFunction emitRegistryFeeClaimedEventFunction, CancellationTokenSource cancellationToken = null)
+        {
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(emitRegistryFeeClaimedEventFunction, cancellationToken);
+        }
+
+        public virtual Task<string> EmitRegistryFeeClaimedEventRequestAsync(byte[] assetId, byte[] subscriber, BigInteger claimedAmount, BigInteger claimedAtTimestamp, BigInteger claimedAtNonce)
+        {
+            var emitRegistryFeeClaimedEventFunction = new EmitRegistryFeeClaimedEventFunction();
+                emitRegistryFeeClaimedEventFunction.AssetId = assetId;
+                emitRegistryFeeClaimedEventFunction.Subscriber = subscriber;
+                emitRegistryFeeClaimedEventFunction.ClaimedAmount = claimedAmount;
+                emitRegistryFeeClaimedEventFunction.ClaimedAtTimestamp = claimedAtTimestamp;
+                emitRegistryFeeClaimedEventFunction.ClaimedAtNonce = claimedAtNonce;
+            
+             return ContractHandler.SendRequestAsync(emitRegistryFeeClaimedEventFunction);
+        }
+
+        public virtual Task<TransactionReceipt> EmitRegistryFeeClaimedEventRequestAndWaitForReceiptAsync(byte[] assetId, byte[] subscriber, BigInteger claimedAmount, BigInteger claimedAtTimestamp, BigInteger claimedAtNonce, CancellationTokenSource cancellationToken = null)
+        {
+            var emitRegistryFeeClaimedEventFunction = new EmitRegistryFeeClaimedEventFunction();
+                emitRegistryFeeClaimedEventFunction.AssetId = assetId;
+                emitRegistryFeeClaimedEventFunction.Subscriber = subscriber;
+                emitRegistryFeeClaimedEventFunction.ClaimedAmount = claimedAmount;
+                emitRegistryFeeClaimedEventFunction.ClaimedAtTimestamp = claimedAtTimestamp;
+                emitRegistryFeeClaimedEventFunction.ClaimedAtNonce = claimedAtNonce;
+            
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(emitRegistryFeeClaimedEventFunction, cancellationToken);
         }
 
         public Task<string> GetAssetQueryAsync(GetAssetFunction getAssetFunction, BlockParameter blockParameter = null)
@@ -274,19 +282,33 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
             return ContractHandler.QueryAsync<GetRegistryFeeShareFunction, BigInteger>(null, blockParameter);
         }
 
-        public Task<BigInteger> GetSubscriptionQueryAsync(GetSubscriptionFunction getSubscriptionFunction, BlockParameter blockParameter = null)
+        public Task<BigInteger> GetSubscriptionDurationQueryAsync(GetSubscriptionDurationFunction getSubscriptionDurationFunction, BlockParameter blockParameter = null)
         {
-            return ContractHandler.QueryAsync<GetSubscriptionFunction, BigInteger>(getSubscriptionFunction, blockParameter);
+            return ContractHandler.QueryAsync<GetSubscriptionDurationFunction, BigInteger>(getSubscriptionDurationFunction, blockParameter);
         }
 
         
-        public virtual Task<BigInteger> GetSubscriptionQueryAsync(byte[] assetId, byte[] subscriber, BlockParameter blockParameter = null)
+        public virtual Task<BigInteger> GetSubscriptionDurationQueryAsync(byte[] assetId, BlockParameter blockParameter = null)
         {
-            var getSubscriptionFunction = new GetSubscriptionFunction();
-                getSubscriptionFunction.AssetId = assetId;
-                getSubscriptionFunction.Subscriber = subscriber;
+            var getSubscriptionDurationFunction = new GetSubscriptionDurationFunction();
+                getSubscriptionDurationFunction.AssetId = assetId;
             
-            return ContractHandler.QueryAsync<GetSubscriptionFunction, BigInteger>(getSubscriptionFunction, blockParameter);
+            return ContractHandler.QueryAsync<GetSubscriptionDurationFunction, BigInteger>(getSubscriptionDurationFunction, blockParameter);
+        }
+
+        public Task<BigInteger> GetSubscriptionExpirationQueryAsync(GetSubscriptionExpirationFunction getSubscriptionExpirationFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<GetSubscriptionExpirationFunction, BigInteger>(getSubscriptionExpirationFunction, blockParameter);
+        }
+
+        
+        public virtual Task<BigInteger> GetSubscriptionExpirationQueryAsync(byte[] assetId, byte[] subscriber, BlockParameter blockParameter = null)
+        {
+            var getSubscriptionExpirationFunction = new GetSubscriptionExpirationFunction();
+                getSubscriptionExpirationFunction.AssetId = assetId;
+                getSubscriptionExpirationFunction.Subscriber = subscriber;
+            
+            return ContractHandler.QueryAsync<GetSubscriptionExpirationFunction, BigInteger>(getSubscriptionExpirationFunction, blockParameter);
         }
 
         public Task<BigInteger> GetSubscriptionPriceQueryAsync(GetSubscriptionPriceFunction getSubscriptionPriceFunction, BlockParameter blockParameter = null)
@@ -295,13 +317,42 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
         }
 
         
-        public virtual Task<BigInteger> GetSubscriptionPriceQueryAsync(byte[] assetId, BigInteger duration, BlockParameter blockParameter = null)
+        public virtual Task<BigInteger> GetSubscriptionPriceQueryAsync(byte[] assetId, BigInteger count, BlockParameter blockParameter = null)
         {
             var getSubscriptionPriceFunction = new GetSubscriptionPriceFunction();
                 getSubscriptionPriceFunction.AssetId = assetId;
-                getSubscriptionPriceFunction.Duration = duration;
+                getSubscriptionPriceFunction.Count = count;
             
             return ContractHandler.QueryAsync<GetSubscriptionPriceFunction, BigInteger>(getSubscriptionPriceFunction, blockParameter);
+        }
+
+        public virtual Task<GetSubscriptionPriceAndDurationOutputDTO> GetSubscriptionPriceAndDurationQueryAsync(GetSubscriptionPriceAndDurationFunction getSubscriptionPriceAndDurationFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryDeserializingToObjectAsync<GetSubscriptionPriceAndDurationFunction, GetSubscriptionPriceAndDurationOutputDTO>(getSubscriptionPriceAndDurationFunction, blockParameter);
+        }
+
+        public virtual Task<GetSubscriptionPriceAndDurationOutputDTO> GetSubscriptionPriceAndDurationQueryAsync(byte[] assetId, BigInteger count, BlockParameter blockParameter = null)
+        {
+            var getSubscriptionPriceAndDurationFunction = new GetSubscriptionPriceAndDurationFunction();
+                getSubscriptionPriceAndDurationFunction.AssetId = assetId;
+                getSubscriptionPriceAndDurationFunction.Count = count;
+            
+            return ContractHandler.QueryDeserializingToObjectAsync<GetSubscriptionPriceAndDurationFunction, GetSubscriptionPriceAndDurationOutputDTO>(getSubscriptionPriceAndDurationFunction, blockParameter);
+        }
+
+        public Task<bool> IsSubscriberRevokedQueryAsync(IsSubscriberRevokedFunction isSubscriberRevokedFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<IsSubscriberRevokedFunction, bool>(isSubscriberRevokedFunction, blockParameter);
+        }
+
+        
+        public virtual Task<bool> IsSubscriberRevokedQueryAsync(byte[] assetId, byte[] subscriber, BlockParameter blockParameter = null)
+        {
+            var isSubscriberRevokedFunction = new IsSubscriberRevokedFunction();
+                isSubscriberRevokedFunction.AssetId = assetId;
+                isSubscriberRevokedFunction.Subscriber = subscriber;
+            
+            return ContractHandler.QueryAsync<IsSubscriberRevokedFunction, bool>(isSubscriberRevokedFunction, blockParameter);
         }
 
         public Task<bool> IsSubscriptionActiveQueryAsync(IsSubscriptionActiveFunction isSubscriptionActiveFunction, BlockParameter blockParameter = null)
@@ -317,6 +368,21 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
                 isSubscriptionActiveFunction.Subscriber = subscriber;
             
             return ContractHandler.QueryAsync<IsSubscriptionActiveFunction, bool>(isSubscriptionActiveFunction, blockParameter);
+        }
+
+        public Task<bool> IsSubscriptionExpiredQueryAsync(IsSubscriptionExpiredFunction isSubscriptionExpiredFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<IsSubscriptionExpiredFunction, bool>(isSubscriptionExpiredFunction, blockParameter);
+        }
+
+        
+        public virtual Task<bool> IsSubscriptionExpiredQueryAsync(byte[] assetId, byte[] subscriber, BlockParameter blockParameter = null)
+        {
+            var isSubscriptionExpiredFunction = new IsSubscriptionExpiredFunction();
+                isSubscriptionExpiredFunction.AssetId = assetId;
+                isSubscriptionExpiredFunction.Subscriber = subscriber;
+            
+            return ContractHandler.QueryAsync<IsSubscriptionExpiredFunction, bool>(isSubscriptionExpiredFunction, blockParameter);
         }
 
         public Task<string> OwnerQueryAsync(OwnerFunction ownerFunction, BlockParameter blockParameter = null)
@@ -360,14 +426,14 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
              return ContractHandler.SendRequestAndWaitForReceiptAsync(subscribeFunction, cancellationToken);
         }
 
-        public virtual Task<string> SubscribeRequestAsync(byte[] assetId, byte[] subscriber, string payer, string spender, BigInteger value, BigInteger deadline, byte v, byte[] r, byte[] s)
+        public virtual Task<string> SubscribeRequestAsync(byte[] assetId, byte[] subscriber, string payer, string spender, BigInteger count, BigInteger deadline, byte v, byte[] r, byte[] s)
         {
             var subscribeFunction = new SubscribeFunction();
                 subscribeFunction.AssetId = assetId;
                 subscribeFunction.Subscriber = subscriber;
                 subscribeFunction.Payer = payer;
                 subscribeFunction.Spender = spender;
-                subscribeFunction.Value = value;
+                subscribeFunction.Count = count;
                 subscribeFunction.Deadline = deadline;
                 subscribeFunction.V = v;
                 subscribeFunction.R = r;
@@ -376,14 +442,14 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
              return ContractHandler.SendRequestAsync(subscribeFunction);
         }
 
-        public virtual Task<TransactionReceipt> SubscribeRequestAndWaitForReceiptAsync(byte[] assetId, byte[] subscriber, string payer, string spender, BigInteger value, BigInteger deadline, byte v, byte[] r, byte[] s, CancellationTokenSource cancellationToken = null)
+        public virtual Task<TransactionReceipt> SubscribeRequestAndWaitForReceiptAsync(byte[] assetId, byte[] subscriber, string payer, string spender, BigInteger count, BigInteger deadline, byte v, byte[] r, byte[] s, CancellationTokenSource cancellationToken = null)
         {
             var subscribeFunction = new SubscribeFunction();
                 subscribeFunction.AssetId = assetId;
                 subscribeFunction.Subscriber = subscriber;
                 subscribeFunction.Payer = payer;
                 subscribeFunction.Spender = spender;
-                subscribeFunction.Value = value;
+                subscribeFunction.Count = count;
                 subscribeFunction.Deadline = deadline;
                 subscribeFunction.V = v;
                 subscribeFunction.R = r;
@@ -463,10 +529,10 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
             return new List<Type>
             {
                 typeof(AssetsFunction),
-                typeof(CancelSubscriptionFunction),
                 typeof(ClaimRegistryFeeFunction),
                 typeof(ClaimRegistryFee1Function),
                 typeof(CreateAssetFunction),
+                typeof(EmitRegistryFeeClaimedEventFunction),
                 typeof(GetAssetFunction),
                 typeof(GetCreatorFeeFunction),
                 typeof(GetCreatorFeeShareFunction),
@@ -475,9 +541,13 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
                 typeof(GetOwnerFunction),
                 typeof(GetRegistryFeeFunction),
                 typeof(GetRegistryFeeShareFunction),
-                typeof(GetSubscriptionFunction),
+                typeof(GetSubscriptionDurationFunction),
+                typeof(GetSubscriptionExpirationFunction),
                 typeof(GetSubscriptionPriceFunction),
+                typeof(GetSubscriptionPriceAndDurationFunction),
+                typeof(IsSubscriberRevokedFunction),
                 typeof(IsSubscriptionActiveFunction),
+                typeof(IsSubscriptionExpiredFunction),
                 typeof(OwnerFunction),
                 typeof(RenounceOwnershipFunction),
                 typeof(SubscribeFunction),
@@ -505,6 +575,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.AssetRegistry.Service
             {
                 typeof(AssetAlreadyExistsError),
                 typeof(AssetNotFoundError),
+                typeof(OnlyAssetUnauthorizedAccountError),
+                typeof(OnlyUnrevokedUnauthorizedSubscriberError),
                 typeof(OwnableInvalidOwnerError),
                 typeof(OwnableUnauthorizedAccountError),
                 typeof(RegistryFeeShareOutOfBoundsError)
