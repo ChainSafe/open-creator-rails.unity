@@ -1,0 +1,47 @@
+name: Duplicate Samples
+
+on:
+  push:
+    branches:
+      - main
+      - rob1997/ci
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  duplicate-samples:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GIT_USERNAME: ${{ github.actor }}
+        run: |
+          branch="duplicate-samples/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git config user.name "$GIT_USERNAME"
+          git config user.email "$GIT_USERNAME@users.noreply.github.com"
+          git checkout -b "$branch"
+          
+          ./scripts/duplicateSamples.sh
+          
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          
+          git commit -m "chore: refresh duplicated sample files"
+          
+          git push -u origin "$branch"
+
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "chore: Duplicate Samples" \
+            --body "Automated update from scripts/duplicateSamples.sh triggered by a push to main."
