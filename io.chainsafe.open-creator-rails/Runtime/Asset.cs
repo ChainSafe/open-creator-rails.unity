@@ -23,6 +23,17 @@ using UnityEngine;
 
 namespace Io.ChainSafe.OpenCreatorRails
 {
+    /// <summary>
+    /// MonoBehaviour implementation of <see cref="IAsset"/>. Add one instance to a GameObject in
+    /// your scene for each on-chain asset you want to track, fill in its <c>Registry Address</c>
+    /// and <c>Asset Id</c> fields in the Inspector, then drag it into the <b>Assets</b> list on
+    /// <see cref="OpenCreatorRailsService"/>.
+    /// <para>
+    /// After <see cref="OpenCreatorRailsService.Connect"/> is called, the component fetches the
+    /// asset's full state from the indexer, registers contract event listeners, and keeps the
+    /// local <see cref="IAsset.Subscriptions"/> list in sync automatically.
+    /// </para>
+    /// </summary>
     public class Asset : MonoBehaviour, IAsset
     {
         [field: SerializeField] public EthereumAddress RegistryAddress { get; private set; }
@@ -34,6 +45,8 @@ namespace Io.ChainSafe.OpenCreatorRails
         public EthereumAddress Address { get; private set; }
 
         public BigInteger SubscriptionPrice { get; private set; }
+
+        public TimeSpan SubscriptionDuration { get; private set; }
 
         public EthereumAddress Owner { get; private set; }
 
@@ -58,6 +71,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             Address = assetDto.Address;
             SubscriptionPrice = assetDto.SubscriptionPrice;
+            SubscriptionDuration = assetDto.SubscriptionDuration;
             Owner = assetDto.Owner;
             TokenAddress = assetDto.TokenAddress;
             Subscriptions = assetDto.Subscriptions;
@@ -134,9 +148,16 @@ namespace Io.ChainSafe.OpenCreatorRails
             return await Service.IsSubscriptionActiveQueryAsync(subscriberHashBytes);
         }
 
-        public async UniTask<DateTime> Subscribe(string subscriberId, TimeSpan duration)
+        public async UniTask<(BigInteger price, TimeSpan duration)> GetSubscriptionPriceAndDuration(BigInteger count)
         {
-            (Permit permit, TypedData<Domain> typedData) = await GetPermit(duration);
+            var output = await Service.GetSubscriptionPriceAndDurationQueryAsync(count);
+
+            return (output.Price, TimeSpan.FromSeconds((long)output.Duration));
+        }
+
+        public async UniTask<DateTime> Subscribe(string subscriberId, BigInteger count)
+        {
+            (Permit permit, TypedData<Domain> typedData) = await GetPermit(count);
 
             EthECDSASignature signature =
                 OpenCreatorRailsService.Instance.WalletProvider.SignTypedData(permit, typedData);
@@ -144,7 +165,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             byte[] subscriberHashBytes = subscriberId.ToSubscriberIdHash();
 
             TransactionReceipt receipt = await Service.SubscribeRequestAndWaitForReceiptAsync(subscriberHashBytes,
-                permit.Owner, permit.Spender, permit.Value, permit.Deadline, signature.V[0], signature.R, signature.S);
+                permit.Owner, permit.Spender, count, permit.Deadline, signature.V[0], signature.R, signature.S);
 
             IEventDTO @event = receipt.DecodeAllEvents<SubscriptionExtendedEventDTO>().FirstOrDefault()?.Event ?? 
                                receipt.DecodeAllEvents<SubscriptionRenewedEventDTO>().FirstOrDefault()?.Event as IEventDTO ??
@@ -166,11 +187,11 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
 
-        private async UniTask<(Permit permit, TypedData<Domain> typedData)> GetPermit(TimeSpan duration)
+        private async UniTask<(Permit permit, TypedData<Domain> typedData)> GetPermit(BigInteger count)
         {
             EthereumAddress payer = OpenCreatorRailsService.Instance.WalletProvider.ConnectedAccount;
 
-            BigInteger value = SubscriptionPrice * new BigInteger(duration.TotalSeconds);
+            BigInteger value = SubscriptionPrice * count;
 
             BigInteger nonce = await PermitService.NoncesQueryAsync(payer.Value);
 

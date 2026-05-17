@@ -13,6 +13,17 @@ using UnityEngine;
 
 namespace Io.ChainSafe.OpenCreatorRails
 {
+    /// <summary>
+    /// Built-in <see cref="IEventHandler"/> implementation that polls the chain for new contract
+    /// events on a fixed interval. Add this component to the same GameObject as
+    /// <see cref="OpenCreatorRailsService"/>.
+    /// <para>
+    /// The polling interval (default 12 seconds) is configurable via the <c>Polling Interval</c>
+    /// field in the Inspector. Events are deduplicated by transaction hash, so each event is
+    /// delivered to its registered <see cref="EventDelegate{T}"/> exactly once even if multiple
+    /// poll cycles overlap the same block range.
+    /// </para>
+    /// </summary>
     public class PollingEventHandler : MonoBehaviour, IEventHandler, IWeb3Initialized
     {
         private Func<UniTask> _pollEvent;

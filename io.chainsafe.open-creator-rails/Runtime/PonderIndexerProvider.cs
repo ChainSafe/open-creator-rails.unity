@@ -12,6 +12,12 @@ using UnityEngine.Networking;
 
 namespace Io.ChainSafe.OpenCreatorRails
 {
+    /// <summary>
+    /// Built-in <see cref="IIndexerProvider"/> implementation that queries a
+    /// <a href="https://ponder.sh">Ponder</a>-based GraphQL indexer over HTTP. Add this component
+    /// to the same GameObject as <see cref="OpenCreatorRailsService"/> and set the
+    /// <c>Indexer Url</c> field in the Inspector to the base URL of your deployed indexer.
+    /// </summary>
     public class PonderIndexerProvider : MonoBehaviour, IIndexerProvider
     {
         [field: SerializeField] public string IndexerUrl { get; private set; }
@@ -62,6 +68,7 @@ limit: 1)
         items {{
             address
             subscriptionPrice
+            subscriptionDuration
             owner
             tokenAddress
             subscriptions {{
@@ -86,6 +93,7 @@ limit: 1)
              
              EthereumAddress address = new EthereumAddress(asset.Value<string>("address"));
              BigInteger subscriptionPrice = BigInteger.Parse(asset.Value<string>("subscriptionPrice"));
+             TimeSpan subscriptionDuration = TimeSpan.FromSeconds(asset.Value<long>("subscriptionDuration"));
              EthereumAddress owner = new EthereumAddress(asset.Value<string>("owner"));
              EthereumAddress tokenAddress = new EthereumAddress(asset.Value<string>("tokenAddress"));
              
@@ -105,7 +113,7 @@ limit: 1)
                  return new SubscriptionDto(subscriberIdHash, nonce, startTime, endTime, subscribedAtPrice, registryFeeShare, payer, isExpired, isRevoked, isActive);
              }).ToList();
 
-             return new AssetDto(address, subscriptionPrice, owner, tokenAddress, subscriptions);
+             return new AssetDto(address, subscriptionPrice, subscriptionDuration, owner, tokenAddress, subscriptions);
         }
     }
 }

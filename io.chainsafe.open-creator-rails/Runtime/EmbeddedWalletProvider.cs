@@ -10,6 +10,17 @@ using UnityEngine;
 
 namespace Io.ChainSafe.OpenCreatorRails
 {
+    /// <summary>
+    /// Built-in <see cref="IWalletProvider"/> implementation that derives an HD wallet from a
+    /// BIP-39 mnemonic stored in <see cref="Secrets.FilePath"/>. Add this component to the same
+    /// GameObject as <see cref="OpenCreatorRailsService"/> and set the <c>Chain Id</c> field in
+    /// the Inspector.
+    /// <para>
+    /// The secrets file <see cref="Secrets.FilePath"/> must contain a <c>"mnemonic"</c> key (12- or 24-word BIP-39 phrase)
+    /// and an <c>"rpcUrl"</c> key (JSON-RPC endpoint URL). Credentials are read once during
+    /// <see cref="IInitializeHandler.InitializeAsync"/>, before wallet connection.
+    /// </para>
+    /// </summary>
     public class EmbeddedWalletProvider : MonoBehaviour, IWalletProvider, IInitializeHandler
     {
         private const string MnemonicKey = "mnemonic";
