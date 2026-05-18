@@ -143,7 +143,10 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             Web3 = null;
 
-            await WalletProvider.Disconnect();
+            if (WalletProvider != null)
+            {
+                await WalletProvider.Disconnect();
+            }
         }
     }
 }

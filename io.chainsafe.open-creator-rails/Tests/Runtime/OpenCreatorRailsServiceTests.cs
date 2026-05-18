@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Numerics;
 using System.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails;
@@ -7,27 +6,23 @@ using Io.ChainSafe.OpenCreatorRails.Utils;
 using Nethereum.Util;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 namespace Tests.Runtime
 {
-    public class OpenCreatorRailsServiceTests
+    public class OpenCreatorRailsServiceTests : TestsBase
     {
-        [UnityOneTimeSetUp]
-        public IEnumerator OneTimeSetup()
-        {
-            yield return SceneManager.LoadSceneAsync(0);
-        }
-
         [Test]
         public void Test_SingletonInstance()
         {
             var instance = OpenCreatorRailsService.Instance;
             Assert.NotNull(instance);
             LogAssert.Expect(LogType.Error, $"There is more than one instance of {nameof(OpenCreatorRailsService)}");
-            new GameObject("DoubleInstance").AddComponent<OpenCreatorRailsService>();
+            var secondInstance = new GameObject("DoubleInstance").AddComponent<OpenCreatorRailsService>();
             Assert.AreSame(instance, OpenCreatorRailsService.Instance);
+            Assert.AreNotSame(secondInstance, OpenCreatorRailsService.Instance);
+            // Cleanup
+            Object.Destroy(secondInstance.gameObject);
         }
         
         [Test]

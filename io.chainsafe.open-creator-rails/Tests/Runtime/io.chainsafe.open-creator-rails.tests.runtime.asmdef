@@ -17,7 +17,12 @@
         "Nethereum.Util.dll",
         "Nethereum.Web3.dll",
         "Nethereum.Contracts.dll",
-        "Nethereum.RPC.dll"
+        "Nethereum.RPC.dll",
+        "Nethereum.Signer.dll",
+        "Nethereum.Signer.EIP712.dll",
+        "Nethereum.ABI.dll",
+        "Nethereum.Hex.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

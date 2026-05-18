@@ -24,6 +24,8 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         public async UniTask<T> Query<T>(string query)
         {
+            await UniTask.SwitchToMainThread();
+            
             UnityWebRequest request = new UnityWebRequest(IndexerUrl, UnityWebRequest.kHttpVerbPOST);
 
             request.SetRequestHeader("Content-Type", "application/json");

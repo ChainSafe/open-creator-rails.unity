@@ -54,7 +54,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             {
                 BigInteger currentBlock = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
 
-                if (currentBlock - _lastBlock == 0)
+                if (currentBlock == _lastBlock)
                 {
                     return;
                 }
