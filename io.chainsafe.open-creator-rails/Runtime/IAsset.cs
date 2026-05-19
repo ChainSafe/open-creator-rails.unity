@@ -210,27 +210,29 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// Revokes a subscriber's subscription and immediately terminating their access.
         /// All remaining time (including partial-period dust) is refunded to the original payer(s).
         /// The subscriber is permanently blocked from resubscribing and cancelling until
-        /// <see cref="UnrevokeSubscription"/> is called.
+        /// <see cref="UnrevokeSubscription(string)"/> is called.
         /// <para>
         /// <b>Asset Owner only</b>.
         /// </para>
         /// </summary>
-        /// <param name="subscriberId">
-        /// Plain-text subscriber identity string. The SDK derives the on-chain hash as
-        /// <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
+        /// <param name="subscriberIdHash">
+        /// Subscriber identity hash derived from <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
         /// </param>
-        UniTask RevokeSubscription(string subscriberId);
+        UniTask RevokeSubscription(string subscriberIdHash);
 
+        UniTask RevokeSubscription(string subscriberId, EthereumAddress subscriberAddress);
+        
         /// <summary>
         /// Lifts a permanent revocation for a subscriber, allowing them to resubscribe.
         /// <para>
         /// <b>Asset Owner only</b>.
         /// </para>
         /// </summary>
-        /// <param name="subscriberId">
-        /// Plain-text subscriber identity string. The SDK derives the on-chain hash as
-        /// <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
+        /// <param name="subscriberIdHash">
+        /// Subscriber identity hash derived from <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
         /// </param>
-        UniTask UnrevokeSubscription(string subscriberId);
+        UniTask UnrevokeSubscription(string subscriberIdHash);
+        
+        UniTask UnrevokeSubscription(string subscriberId, EthereumAddress subscriberAddress);
     }
 }

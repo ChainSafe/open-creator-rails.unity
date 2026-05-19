@@ -50,7 +50,7 @@ namespace Tests.Runtime
 
             AssetCreatedEventDTO createdEvent = receipt.DecodeAllEvents<AssetCreatedEventDTO>()[0].Event;
 
-            _assetService = new AssetService(web3, createdEvent.Asset);
+            _assetService = new AssetService(web3, createdEvent.AssetAddress);
         }
 
         // -------------------------------------------------------------------------

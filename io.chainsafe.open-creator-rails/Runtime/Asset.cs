@@ -10,12 +10,12 @@ using Io.ChainSafe.OpenCreatorRails.Contracts.ERC20Permit.ContractDefinition;
 using Io.ChainSafe.OpenCreatorRails.Contracts.ERC20Permit.Service;
 using Io.ChainSafe.OpenCreatorRails.DTOs;
 using Io.ChainSafe.OpenCreatorRails.Utils;
+using Nethereum.ABI;
 using Nethereum.ABI.EIP712;
 using Nethereum.ABI.EIP712.EIP2612;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 using Nethereum.Contracts;
 using Nethereum.Hex.HexConvertors.Extensions;
-using Nethereum.Model;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Signer;
 using Nethereum.Web3;
@@ -191,7 +191,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         {
             EthereumAddress payer = OpenCreatorRailsService.Instance.WalletProvider.ConnectedAccount;
 
-            BigInteger value = SubscriptionPrice * count;
+            BigInteger value = await Service.GetSubscriptionPriceQueryAsync(count);
 
             BigInteger nonce = await PermitService.NoncesQueryAsync(payer.Value);
 
@@ -214,7 +214,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             string address = Address.Value;
 
-            string subscriberIdHash = subscriberId.ToSubscriberIdHash().ToHex(true);
+            byte[] subscriberIdHash = subscriberId.ToSubscriberIdHash();
 
             byte[] encoded = OpenCreatorRailsService.ABIEncode.GetABIEncodedPacked(new("uint256", chainId),
                 new("address", address), new("bytes32", subscriberIdHash));
@@ -223,8 +223,10 @@ namespace Io.ChainSafe.OpenCreatorRails
             
             EthECDSASignature signature =
                 OpenCreatorRailsService.Instance.WalletProvider.SignMessage(hash);
-            
-            var receipt = await Service.CancelSubscriptionRequestAndWaitForReceiptAsync(subscriberId, signature.To64ByteArray());
+
+            byte[] signatureBytes = signature.R.Concat(signature.S).Concat(signature.V).ToArray();
+
+            var receipt = await Service.CancelSubscriptionRequestAndWaitForReceiptAsync(subscriberId, signatureBytes);
 
             if (!SubscriptionRemoved(receipt))
             {
@@ -273,11 +275,11 @@ namespace Io.ChainSafe.OpenCreatorRails
             return amount;
         }
 
-        public async UniTask RevokeSubscription(string subscriberId)
+        public async UniTask RevokeSubscription(string subscriberIdHash)
         {
             AssertOwner();
             
-            byte[] subscriberHashBytes = subscriberId.ToSubscriberIdHash();
+            byte[] subscriberHashBytes = subscriberIdHash.HexToByteArray();
             
             var receipt = await Service.RevokeSubscriptionRequestAndWaitForReceiptAsync(subscriberHashBytes);
 
@@ -289,15 +291,31 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
 
-        public async UniTask UnrevokeSubscription(string subscriberId)
+        public UniTask RevokeSubscription(string subscriberId, EthereumAddress subscriberAddress)
         {
-            byte[] subscriberHashBytes = subscriberId.ToSubscriberIdHash();
+            string subscriberIdHash = new ABIValue[] { new ("string", subscriberId), new ("address", subscriberAddress.Value) }
+                .GetABIEncoded().ToHex(true).Keccack256();
+            
+            return RevokeSubscription(subscriberIdHash);
+        }
+
+        public async UniTask UnrevokeSubscription(string subscriberIdHash)
+        {
+            byte[] subscriberHashBytes = subscriberIdHash.HexToByteArray();
 
             var receipt = await Service.UnrevokeSubscriptionRequestAndWaitForReceiptAsync(subscriberHashBytes);
             
             SubscriptionUnrevokedEventDTO @event = receipt.DecodeAllEvents<SubscriptionUnrevokedEventDTO>()[0].Event;
             
             SubscriptionUnrevoked(@event);
+        }
+
+        public UniTask UnrevokeSubscription(string subscriberId, EthereumAddress subscriberAddress)
+        {
+            string subscriberIdHash = new ABIValue[] { new ("string", subscriberId), new ("address", subscriberAddress.Value) }
+                .GetABIEncoded().ToHex(true).Keccack256();
+            
+            return UnrevokeSubscription(subscriberIdHash);
         }
 
         private bool SubscriptionRemoved(TransactionReceipt receipt)

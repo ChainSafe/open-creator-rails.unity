@@ -1,6 +1,5 @@
 using System;
 using Nethereum.Util;
-using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Io.ChainSafe.OpenCreatorRails.Utils
@@ -47,12 +46,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
 
         public static bool operator ==(EthereumAddress a, EthereumAddress b)
         {
-            return a.Value == b.Value;
+            return string.Equals(a.Value, b.Value, StringComparison.CurrentCultureIgnoreCase);
         }
         
         public static bool operator !=(EthereumAddress a, EthereumAddress b)
         {
-            return a.Value != b.Value;
+            return !string.Equals(a.Value, b.Value, StringComparison.CurrentCultureIgnoreCase);
         }
 
         public override bool Equals(object obj)

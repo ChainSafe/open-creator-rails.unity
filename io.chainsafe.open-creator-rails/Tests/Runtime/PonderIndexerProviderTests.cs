@@ -87,7 +87,7 @@ namespace Tests.Runtime
             // bytes32 for the contract call: keccak256(assetIdString) → hex string → raw bytes
             byte[] assetIdBytes32 = assetIdString.Keccack256().HexToByteArray();
 
-            BigInteger subscriptionPrice    = new BigInteger(500);
+            BigInteger subscriptionPrice = new BigInteger(500);
             BigInteger subscriptionDuration = new BigInteger(86400); // 1 day in seconds
 
             // --- 4. Create the asset and wait for the transaction to be mined ---
@@ -102,7 +102,7 @@ namespace Tests.Runtime
             AssetCreatedEventDTO createdEvent = receipt.DecodeAllEvents<AssetCreatedEventDTO>()[0].Event;
 
             Assert.IsNotNull(createdEvent, "AssetCreated event must be present in the receipt.");
-            Assert.IsFalse(string.IsNullOrEmpty(createdEvent.Asset),
+            Assert.IsFalse(string.IsNullOrEmpty(createdEvent.AssetAddress),
                 "AssetCreated event must carry the new asset contract address.");
 
             //--- 6. Wait for Ponder to index the AssetCreated event ---   
@@ -119,7 +119,7 @@ namespace Tests.Runtime
                 "Indexed asset address must be a valid Ethereum address.");
 
             Assert.AreEqual(
-                createdEvent.Asset.ToLower(),
+                createdEvent.AssetAddress.ToLower(),
                 dto.Address.Value.ToLower(),
                 "Indexed asset address must match the address emitted by the AssetCreated event.");
 

@@ -22,7 +22,8 @@
         "Nethereum.Signer.EIP712.dll",
         "Nethereum.ABI.dll",
         "Nethereum.Hex.dll",
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "Nethereum.JsonRpc.Client.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

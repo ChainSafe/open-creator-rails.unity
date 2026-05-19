@@ -539,6 +539,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Contracts.Asset.Service
                 typeof(InvalidSignatureError),
                 typeof(InvalidSpenderError),
                 typeof(InvalidSubscriptionDurationError),
+                typeof(InvalidSubscriptionPriceError),
                 typeof(InvalidTokenAddressError),
                 typeof(OnlyRegistryUnauthorizedAccountError),
                 typeof(OnlyUnrevokedUnauthorizedSubscriberError),
