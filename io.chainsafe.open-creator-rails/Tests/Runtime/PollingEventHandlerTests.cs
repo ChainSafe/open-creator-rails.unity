@@ -14,6 +14,7 @@ using NUnit.Framework;
 
 namespace Tests.Runtime
 {
+    [TestFixture]
     public class PollingEventHandlerTests : TestsBase
     {
         // Pre-seeded registry from the Demo scene / seed-local.sh.
@@ -29,12 +30,15 @@ namespace Tests.Runtime
             (PollingEventHandler)OpenCreatorRailsService.Instance.EventHandler;
 
         [SetUp]
-        public async Task SetUp()
+        public override async Task SetUp()
         {
             // Connect as account 1 — owner of the pre-seeded registry.
             await OpenCreatorRailsService.Instance.Connect(0);
 
             var web3 = OpenCreatorRailsService.Instance.Web3;
+            // There's an implemented TransactionInterceptor assigned to this during connect
+            // that deduplicates events so we set it to null for testing
+            web3.Client.OverridingRequestInterceptor = null;
             var registryService = OpenCreatorRailsService.GetAssetRegistry(RegistryAddress);
 
             // Append a Guid so repeated SetUp calls never hit the AssetAlreadyExists revert.

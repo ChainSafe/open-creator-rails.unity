@@ -46,33 +46,47 @@ namespace Io.ChainSafe.OpenCreatorRails
             _lastBlock= await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
         }
 
+        private async UniTask FilterAndInvoke<T>(Event<T> @event, IWeb3 web3, EventDelegate<T> @delegate) where T: IEventDTO, new()
+        {
+            BigInteger currentBlock = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+
+            if (currentBlock == _lastBlock)
+            {
+                return;
+            }
+                
+            var filter = @event.CreateFilterInput(new BlockParameter(new HexBigInteger(_lastBlock)), new BlockParameter(new HexBigInteger(currentBlock)));
+
+            var logs = await @event.GetAllChangesAsync(filter);
+                
+            foreach (var log in logs)
+            {
+                if (_hashes.Add(log.Log.TransactionHash))
+                {
+                    @delegate?.Invoke(log.Event);
+                }
+            }
+        }
+
+        public void DeduplicateEvent(string identifier)
+        {
+            _hashes.Add(identifier);
+        }
+
         public void Subscribe<T>(EthereumAddress address, IWeb3 web3, EventDelegate<T> @delegate) where T: IEventDTO, new()
         {
             Event<T> @event = web3.Eth.GetEvent<T>(address.Value);
 
-            _pollEvent += async () =>
-            {
-                BigInteger currentBlock = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-
-                if (currentBlock == _lastBlock)
-                {
-                    return;
-                }
-                
-                var filter = @event.CreateFilterInput(new BlockParameter(new HexBigInteger(_lastBlock)), new BlockParameter(new HexBigInteger(currentBlock)));
-
-                var logs = await @event.GetAllChangesAsync(filter);
-                
-                foreach (var log in logs)
-                {
-                    if (_hashes.Add(log.Log.TransactionHash))
-                    {
-                        @delegate?.Invoke(log.Event);
-                    }
-                }
-            };
+            _pollEvent += () => FilterAndInvoke(@event, web3, @delegate);
         }
         
+        public void Unsubscribe<T>(EthereumAddress address, IWeb3 web3, EventDelegate<T> @delegate) where T : IEventDTO, new()
+        {
+            Event<T> @event = web3.Eth.GetEvent<T>(address.Value);
+
+            _pollEvent -= () => FilterAndInvoke(@event, web3, @delegate);
+        }
+
         private async UniTaskVoid UpdateLoopAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)

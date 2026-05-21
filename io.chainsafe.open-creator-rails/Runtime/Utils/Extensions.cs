@@ -47,9 +47,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         {
             EthereumAddress account = OpenCreatorRailsService.Instance.WalletProvider.ConnectedAccount;
 
-            return new ABIValue[] { new ("string", subscriberId), new ("address", account.Value) }
-                .GetABIEncoded()
-                .Keccack256();
+            return subscriberId.ToSubscriberIdHash(account);
         }
 
         /// <summary>
@@ -63,6 +61,19 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         public static void SubscribeToEvent<T>(this ContractWeb3ServiceBase service, EventDelegate<T> @delegate) where T : IEventDTO, new()
         {
             OpenCreatorRailsService.Instance.EventHandler.Subscribe(new EthereumAddress(service.ContractAddress), service.Web3, @delegate);
+        }
+        
+        /// <summary>
+        /// Removes a previously registered <see cref="EventDelegate{T}"/> listener for events
+        /// emitted by the contract bound to <paramref name="service"/> via
+        /// <see cref="IEventHandler.Unsubscribe{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The Nethereum event DTO type to unsubscribe from, implements <see cref="IEventDTO"/>.</typeparam>
+        /// <param name="service">The contract service whose address and <see cref="IWeb3"/> instance are used.</param>
+        /// <param name="delegate">The callback to remove; must be the same delegate instance passed to <see cref="SubscribeToEvent{T}"/>.</param>
+        public static void UnsubscribeToEvent<T>(this ContractWeb3ServiceBase service, EventDelegate<T> @delegate) where T : IEventDTO, new()
+        {
+            OpenCreatorRailsService.Instance.EventHandler.Unsubscribe(new EthereumAddress(service.ContractAddress), service.Web3, @delegate);
         }
 
         /// <summary>Converts a Unix timestamp (seconds since epoch) to a local <see cref="DateTime"/>.</summary>
@@ -86,6 +97,20 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
             Func<T, UniTask> action)
         {
             return UniTask.WhenAll(collection.Select(action));
+        }
+
+        /// <summary>
+        /// Computes the on-chain subscriber identity hash for the given subscriber ID and an
+        /// explicit wallet address: <c>keccak256(abi.encode(subscriberId, address))</c>.
+        /// </summary>
+        /// <param name="subscriberId">The plain-text subscriber identity string.</param>
+        /// <param name="address">The wallet address to bind the subscriber identity to.</param>
+        /// <returns>The 32-byte subscriber identity hash.</returns>
+        public static byte[] ToSubscriberIdHash(this string subscriberId, EthereumAddress address)
+        {
+            return new ABIValue[] { new ("string", subscriberId), new ("address", address.Value) }
+                .GetABIEncoded()
+                .Keccack256();
         }
     }
 }

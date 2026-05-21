@@ -10,7 +10,6 @@ using Io.ChainSafe.OpenCreatorRails.Contracts.ERC20Permit.ContractDefinition;
 using Io.ChainSafe.OpenCreatorRails.Contracts.ERC20Permit.Service;
 using Io.ChainSafe.OpenCreatorRails.DTOs;
 using Io.ChainSafe.OpenCreatorRails.Utils;
-using Nethereum.ABI;
 using Nethereum.ABI.EIP712;
 using Nethereum.ABI.EIP712.EIP2612;
 using Nethereum.ABI.FunctionEncoding.Attributes;
@@ -64,7 +63,36 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         private TypedData<Domain> _typedData;
 
+        public async UniTask InitializeAsync()
+        {
+            await Refresh();
+        }
+        
         public async UniTask Connected(Web3 web3)
+        {
+            Service = new AssetService(web3, Address.Value);
+            PermitService = new ERC20PermitService(web3, TokenAddress.Value);
+            AssetRegistryService = new AssetRegistryService(web3, RegistryAddress.Value);
+
+            if (_domain == null)
+            {
+                _domain = await PermitService.Eip712DomainQueryAsync();
+
+                _typedData = EIP2612TypeFactory.GetTypedDefinition();
+
+                _typedData.Domain = new Domain
+                {
+                    Name = _domain.Name,
+                    Version = _domain.Version,
+                    ChainId = _domain.ChainId,
+                    VerifyingContract = _domain.VerifyingContract
+                };
+            }
+            
+            SubscribeToEvents();
+        }
+
+        public async UniTask Refresh()
         {
             AssetDto assetDto =
                 await OpenCreatorRailsService.Instance.IndexerProvider.GetAsset(AssetIdHash, RegistryAddress);
@@ -75,24 +103,16 @@ namespace Io.ChainSafe.OpenCreatorRails
             Owner = assetDto.Owner;
             TokenAddress = assetDto.TokenAddress;
             Subscriptions = assetDto.Subscriptions;
-
-            Service = new AssetService(web3, Address.Value);
-            PermitService = new ERC20PermitService(web3, TokenAddress.Value);
-            AssetRegistryService = new AssetRegistryService(web3, RegistryAddress.Value);
-
-            SubscribeToEvents();
-
-            _domain = await PermitService.Eip712DomainQueryAsync();
-
-            _typedData = EIP2612TypeFactory.GetTypedDefinition();
-
-            _typedData.Domain = new Domain
+        }
+        
+        public UniTask Disconnected()
+        {
+            if (OpenCreatorRailsService.Instance.Connected)
             {
-                Name = _domain.Name,
-                Version = _domain.Version,
-                ChainId = _domain.ChainId,
-                VerifyingContract = _domain.VerifyingContract
-            };
+                UnubscribeToEvents();
+            }
+                
+            return UniTask.CompletedTask;
         }
 
         private void SubscribeToEvents()
@@ -106,6 +126,19 @@ namespace Io.ChainSafe.OpenCreatorRails
             Service.SubscribeToEvent<SubscriptionUnrevokedEventDTO>(SubscriptionUnrevoked);
             Service.SubscribeToEvent<SubscriptionRemovedEventDTO>(SubscriptionRemoved);
             Service.SubscribeToEvent<OwnershipTransferredEventDTO>(OwnershipTransferred);
+        }
+        
+        private void UnubscribeToEvents()
+        {
+            Service.UnsubscribeToEvent<SubscriptionAddedEventDTO>(SubscriptionAdded);
+            Service.UnsubscribeToEvent<SubscriptionRenewedEventDTO>(SubscriptionRenewed);
+            Service.UnsubscribeToEvent<SubscriptionExtendedEventDTO>(SubscriptionExtended);
+            Service.UnsubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(SubscriptionPriceUpdated);
+            Service.UnsubscribeToEvent<SubscriptionCancelledEventDTO>(SubscriptionCancelled);
+            Service.UnsubscribeToEvent<SubscriptionRevokedEventDTO>(SubscriptionRevoked);
+            Service.UnsubscribeToEvent<SubscriptionUnrevokedEventDTO>(SubscriptionUnrevoked);
+            Service.UnsubscribeToEvent<SubscriptionRemovedEventDTO>(SubscriptionRemoved);
+            Service.UnsubscribeToEvent<OwnershipTransferredEventDTO>(OwnershipTransferred);
         }
 
         private void AssertOwner()
@@ -247,13 +280,11 @@ namespace Io.ChainSafe.OpenCreatorRails
             SubscriptionPriceUpdated(@event);
         }
 
-        public async UniTask<BigInteger> ClaimCreatorFee(string subscriberId)
+        private async UniTask<BigInteger> ClaimCreatorFee(byte[] subscriberIdHash)
         {
             AssertOwner();
 
-            byte[] subscriberHashBytes = subscriberId.ToSubscriberIdHash();
-            
-            var receipt = await Service.ClaimCreatorFeeRequestAndWaitForReceiptAsync(subscriberHashBytes);
+            var receipt = await Service.ClaimCreatorFeeRequestAndWaitForReceiptAsync(subscriberIdHash);
             
             BigInteger amount =
                 receipt.DecodeAllEvents<CreatorFeeClaimedEventDTO>()[0].Event.Amount;
@@ -261,27 +292,54 @@ namespace Io.ChainSafe.OpenCreatorRails
             return amount;
         }
         
-        public async UniTask<BigInteger> ClaimCreatorFee(string[] subscriberIds)
+        public UniTask<BigInteger> ClaimCreatorFee(string subscriberIdHash)
+        {
+            byte[] subscriberHashBytes = subscriberIdHash.HexToByteArray();
+            
+            return ClaimCreatorFee(subscriberHashBytes);
+        }
+
+        public UniTask<BigInteger> ClaimCreatorFee(string subscriberId, EthereumAddress subscriberAddress)
+        {
+            byte[] subscriberIdHash = subscriberId.ToSubscriberIdHash(subscriberAddress);
+            
+            return ClaimCreatorFee(subscriberIdHash);
+        }
+
+        private async UniTask<BigInteger> ClaimCreatorFee(List<byte[]> subscriberIdHashes)
         {
             AssertOwner();
 
-            List<byte[]> subscriberHashBytesList = subscriberIds.Select(subscriberId => subscriberId.ToSubscriberIdHash()).ToList();
-            
-            var receipt = await Service.ClaimCreatorFeeRequestAndWaitForReceiptAsync(subscriberHashBytesList);
+            var receipt = await Service.ClaimCreatorFeeRequestAndWaitForReceiptAsync(subscriberIdHashes);
             
             BigInteger amount =
-                receipt.DecodeAllEvents<CreatorFeeClaimedBatchEventDTO>()[0].Event.TotalAmount;
+                receipt.DecodeAllEvents<CreatorFeeClaimedBatchEvent>()[0].Event.TotalAmount;
 
             return amount;
         }
+        
+        public UniTask<BigInteger> ClaimCreatorFee(string[] subscriberIdHashes)
+        {
+            List<byte[]> subscriberIdHashesBytesList =
+                subscriberIdHashes.Select(subscriberIdHash => subscriberIdHash.HexToByteArray()).ToList();
+            
+            return ClaimCreatorFee(subscriberIdHashesBytesList);
+        }
 
-        public async UniTask RevokeSubscription(string subscriberIdHash)
+        public UniTask<BigInteger> ClaimCreatorFee((string subscriberId, EthereumAddress subscriberAddress)[] subscribers)
+        {
+            List<byte[]> subscriberIdHashes = subscribers.Select(subscriber =>
+                    subscriber.subscriberId.ToSubscriberIdHash(subscriber.subscriberAddress))
+                .ToList();
+
+            return ClaimCreatorFee(subscriberIdHashes);
+        }
+
+        private async UniTask RevokeSubscription(byte[] subscriberIdHash)
         {
             AssertOwner();
             
-            byte[] subscriberHashBytes = subscriberIdHash.HexToByteArray();
-            
-            var receipt = await Service.RevokeSubscriptionRequestAndWaitForReceiptAsync(subscriberHashBytes);
+            var receipt = await Service.RevokeSubscriptionRequestAndWaitForReceiptAsync(subscriberIdHash);
 
             if (!SubscriptionRemoved(receipt))
             {
@@ -290,30 +348,42 @@ namespace Io.ChainSafe.OpenCreatorRails
                 SubscriptionRevoked(@event);
             }
         }
+        
+        public UniTask RevokeSubscription(string subscriberIdHash)
+        {
+            byte[] subscriberIdHashBytes = subscriberIdHash.HexToByteArray();
+            
+            return RevokeSubscription(subscriberIdHashBytes);
+        }
 
         public UniTask RevokeSubscription(string subscriberId, EthereumAddress subscriberAddress)
         {
-            string subscriberIdHash = new ABIValue[] { new ("string", subscriberId), new ("address", subscriberAddress.Value) }
-                .GetABIEncoded().ToHex(true).Keccack256();
+            byte[] subscriberIdHash = subscriberId.ToSubscriberIdHash(subscriberAddress);
             
             return RevokeSubscription(subscriberIdHash);
         }
 
-        public async UniTask UnrevokeSubscription(string subscriberIdHash)
+        private async UniTask UnrevokeSubscription(byte[] subscriberIdHash)
         {
-            byte[] subscriberHashBytes = subscriberIdHash.HexToByteArray();
-
-            var receipt = await Service.UnrevokeSubscriptionRequestAndWaitForReceiptAsync(subscriberHashBytes);
+            AssertOwner();
+            
+            var receipt = await Service.UnrevokeSubscriptionRequestAndWaitForReceiptAsync(subscriberIdHash);
             
             SubscriptionUnrevokedEventDTO @event = receipt.DecodeAllEvents<SubscriptionUnrevokedEventDTO>()[0].Event;
             
             SubscriptionUnrevoked(@event);
         }
+        
+        public UniTask UnrevokeSubscription(string subscriberIdHash)
+        {
+            byte[] subscriberHashBytes = subscriberIdHash.HexToByteArray();
+
+            return UnrevokeSubscription(subscriberHashBytes);
+        }
 
         public UniTask UnrevokeSubscription(string subscriberId, EthereumAddress subscriberAddress)
         {
-            string subscriberIdHash = new ABIValue[] { new ("string", subscriberId), new ("address", subscriberAddress.Value) }
-                .GetABIEncoded().ToHex(true).Keccack256();
+            byte[] subscriberIdHash = subscriberId.ToSubscriberIdHash(subscriberAddress);
             
             return UnrevokeSubscription(subscriberIdHash);
         }

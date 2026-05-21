@@ -10,6 +10,7 @@ using UnityEngine.TestTools;
 
 namespace Tests.Runtime
 {
+    [TestFixture]
     public class OpenCreatorRailsServiceTests : TestsBase
     {
         [Test]
