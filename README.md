@@ -70,7 +70,7 @@ For each on-chain asset you want to track, add an `Asset` component to any GameO
 | `Registry Address` | Address of the deployed `AssetRegistry` contract |
 | `Asset Id` | Human-readable asset identifier (e.g. `"default_asset_id"`) |
 
-Then drag each `Asset` instance into the **Assets** list on the `OpenCreatorRailsService` component so the service can manage them.
+> **Note:** `Asset` components are registered automatically, any active `Asset` in the scene is picked up by the Editor as soon as it is added to the hierarchy and referenced in the **Assets** list on the `OpenCreatorRailsService` component. Deleting the GameObject or removing the `Asset` component removes it from the list.
 
 ![0_ocr_setup](./docs/images/0_ocr_setup.png)
 
