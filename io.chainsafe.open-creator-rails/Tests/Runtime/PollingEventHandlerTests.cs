@@ -14,6 +14,7 @@ using NUnit.Framework;
 
 namespace Tests.Runtime
 {
+    [TestFixture]
     public class PollingEventHandlerTests : TestsBase
     {
         // Pre-seeded registry from the Demo scene / seed-local.sh.
@@ -29,12 +30,15 @@ namespace Tests.Runtime
             (PollingEventHandler)OpenCreatorRailsService.Instance.EventHandler;
 
         [SetUp]
-        public async Task SetUp()
+        public override async Task SetUp()
         {
             // Connect as account 1 — owner of the pre-seeded registry.
             await OpenCreatorRailsService.Instance.Connect(0);
 
             var web3 = OpenCreatorRailsService.Instance.Web3;
+            // There's an implemented TransactionInterceptor assigned to this during connect
+            // that deduplicates events so we set it to null for testing
+            web3.Client.OverridingRequestInterceptor = null;
             var registryService = OpenCreatorRailsService.GetAssetRegistry(RegistryAddress);
 
             // Append a Guid so repeated SetUp calls never hit the AssetAlreadyExists revert.
@@ -50,7 +54,7 @@ namespace Tests.Runtime
 
             AssetCreatedEventDTO createdEvent = receipt.DecodeAllEvents<AssetCreatedEventDTO>()[0].Event;
 
-            _assetService = new AssetService(web3, createdEvent.Asset);
+            _assetService = new AssetService(web3, createdEvent.AssetAddress);
         }
 
         // -------------------------------------------------------------------------
@@ -172,6 +176,34 @@ namespace Tests.Runtime
             await InvokePollAsync(Handler);
 
             Assert.IsFalse(delegateCalled, "Delegate must not be called when no events were emitted in the polled range.");
+        }
+
+        // -------------------------------------------------------------------------
+        // Test 5 — After unsubscribing, a subsequent poll cycle does not invoke the
+        //           removed delegate even when a matching event is emitted.
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public async Task Test_Unsubscribe_DelegateNotCalledAfterUnsubscribe()
+        {
+            int invokeCount = 0;
+
+            EventDelegate<SubscriptionPriceUpdatedEventDTO> handler = _ => invokeCount++;
+
+            // Subscribe and confirm delivery works.
+            _assetService.SubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(handler);
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(111));
+            await InvokePollAsync(Handler);
+
+            Assert.AreEqual(1, invokeCount, "Delegate must be invoked once after the first emission.");
+
+            // Unsubscribe — the delegate must no longer receive events.
+            _assetService.UnsubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(handler);
+
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(222));
+            await InvokePollAsync(Handler);
+
+            Assert.AreEqual(1, invokeCount, "Delegate must not be called after UnsubscribeToEvent.");
         }
     }
 }

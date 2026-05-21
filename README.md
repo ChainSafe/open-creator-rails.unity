@@ -95,7 +95,7 @@ await OpenCreatorRailsService.Instance.Connect();
 // Connect a different HD account (e.g. account at derivation index 2)
 await OpenCreatorRailsService.Instance.Connect(index: 2);
 
-var connectedAccount = OpenCreatorRails.Instance.WalletProvider.ConnectedAccount;
+var connectedAccount = OpenCreatorRailsService.Instance.WalletProvider.ConnectedAccount;
 ```
 
 After `Connect()` returns, every `IAsset` in the scene is populated with its on-chain state and event listeners are active.
@@ -104,7 +104,7 @@ After `Connect()` returns, every `IAsset` in the scene is populated with its on-
 
 ### 2. Getting an Asset and Checking Subscriptions
 
-Use `TryGetAsset` to retrieve a pre-configured asset by its human-readable ID. Subscription status queries are read-only and can be called by anyone — no permissions are required.
+Use `TryGetAsset` to retrieve a pre-configured asset by its human-readable ID. Subscription status queries are read-only and can be called by anyone — no permissions are required. To force a re-fetch of the asset's state from the indexer outside the normal event-driven cycle, call `await asset.Refresh()`.
 
 ```csharp
 // Retrieve a configured asset by its human-readable ID.
@@ -193,8 +193,10 @@ Debug.Log("Subscription cancelled.");
 ```csharp
 // ASSET OWNER ONLY.
 // Price is denominated in the token's smallest unit (e.g. wei for an 18-decimal token).
+// Must be a non-zero multiple of 100 to preserve integer precision when splitting
+// fees between creator and registry — reverts with InvalidSubscriptionPrice otherwise.
 
-BigInteger newPriceInTokenWei = 8;   // replace with your desired price
+BigInteger newPriceInTokenWei = 100;   // replace with your desired price (non-zero multiple of 100)
 
 await asset.SetSubscriptionPrice(newPriceInTokenWei);
 
@@ -212,10 +214,15 @@ Creator fees accrue pro-rata over completed subscription periods since the last 
 
 ```csharp
 // ASSET OWNER ONLY.
+// The primary overload takes a pre-computed subscriber identity hash:
+//   keccak256(abi.encode(subscriberId, subscriberAddress))
+// Use the ToSubscriberIdHash() extension to compute it:
+string subscriberIdHash = "user_123".ToSubscriberIdHash(subscriberAddress);
 
-string subscriberId = "user_123";
+BigInteger claimed = await asset.ClaimCreatorFee(subscriberIdHash);
 
-BigInteger claimed = await asset.ClaimCreatorFee(subscriberId);
+// Or use the convenience overload that computes the hash for you:
+// BigInteger claimed = await asset.ClaimCreatorFee("user_123", subscriberAddress);
 
 Debug.Log($"Claimed creator fee: {claimed} (token wei)");
 ```
@@ -225,10 +232,18 @@ Debug.Log($"Claimed creator fee: {claimed} (token wei)");
 ```csharp
 // ASSET OWNER ONLY.
 // Subscribers with no accrued fee are silently skipped.
+// Pass an array of pre-computed subscriber identity hashes:
+string[] subscriberIdHashes =
+{
+    "user_123".ToSubscriberIdHash(addr1),
+    "user_456".ToSubscriberIdHash(addr2),
+    "user_789".ToSubscriberIdHash(addr3),
+};
 
-string[] subscriberIds = { "user_123", "user_456", "user_789" };
+BigInteger totalClaimed = await asset.ClaimCreatorFee(subscriberIdHashes);
 
-BigInteger totalClaimed = await asset.ClaimCreatorFee(subscriberIds);
+// Or use the convenience overload that computes hashes for you:
+// BigInteger total = await asset.ClaimCreatorFee(new[] { ("user_123", addr1), ("user_456", addr2), ("user_789", addr3) });
 
 Debug.Log($"Total creator fees claimed: {totalClaimed} (token wei)");
 ```
@@ -244,12 +259,16 @@ Revocation immediately terminates a subscriber's access. All remaining time is r
 ```csharp
 // ASSET OWNER ONLY.
 // Reverts if the subscriber is already revoked.
+// The primary overload takes a pre-computed subscriber identity hash:
+//   keccak256(abi.encode(subscriberId, subscriberAddress))
+string subscriberIdHash = "user_123".ToSubscriberIdHash(subscriberAddress);
 
-string subscriberId = "user_123";
+await asset.RevokeSubscription(subscriberIdHash);
 
-await asset.RevokeSubscription(subscriberId);
+// Or use the convenience overload that computes the hash for you:
+// await asset.RevokeSubscription("user_123", subscriberAddress);
 
-Debug.Log($"Subscriber {subscriberId} revoked.");
+Debug.Log("Subscriber revoked.");
 ```
 
 #### Unrevoking
@@ -258,10 +277,14 @@ Lifts a permanent revocation, allowing the subscriber to resubscribe.
 
 ```csharp
 // ASSET OWNER ONLY.
+// The primary overload takes a pre-computed subscriber identity hash:
+//   keccak256(abi.encode(subscriberId, subscriberAddress))
+string subscriberIdHash = "user_123".ToSubscriberIdHash(subscriberAddress);
 
-string subscriberId = "user_123";
+await asset.UnrevokeSubscription(subscriberIdHash);
 
-await asset.UnrevokeSubscription(subscriberId);
+// Or use the convenience overload that computes the hash for you:
+// await asset.UnrevokeSubscription("user_123", subscriberAddress);
 
-Debug.Log($"Subscriber {subscriberId} unrevoked.");
+Debug.Log("Subscriber unrevoked.");
 ```

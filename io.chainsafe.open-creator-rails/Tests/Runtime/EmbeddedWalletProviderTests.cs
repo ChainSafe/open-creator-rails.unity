@@ -10,13 +10,16 @@ using NUnit.Framework;
 
 namespace Tests.Runtime
 {
+    [TestFixture]
     public class EmbeddedWalletProviderTests : TestsBase
     {
         private IWalletProvider WalletProvider => OpenCreatorRailsService.Instance.WalletProvider;
 
         [SetUp]
-        public async Task SetUp()
+        public override async Task SetUp()
         {
+            await base.SetUp();
+            
             // Always start each test from a known state: account index 0.
             await OpenCreatorRailsService.Instance.Connect(0);
         }

@@ -44,6 +44,13 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </summary>
         public Web3 Web3 { get; private set; }
 
+        /// <summary>
+        /// <c>true</c> when a wallet session is active (i.e. <see cref="Connect"/> has been
+        /// called successfully and <see cref="Disconnect"/> has not yet been called);
+        /// otherwise <c>false</c>.
+        /// </summary>
+        public bool Connected => Web3 != null;
+
         [SerializeField] private List<Asset> _assets;
 
         /// <summary>
@@ -63,12 +70,18 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
-
-            await GetComponents<IInitializeHandler>().ForEachAsync(handler => handler.InitializeAsync());
             
+            // Assign / Reference
             WalletProvider = GetComponent<IWalletProvider>();
             IndexerProvider = GetComponent<IIndexerProvider>();
             EventHandler = GetComponent<IEventHandler>();
+            
+            // Initialize
+            IInitializeHandler[] initializeHandlers = GetComponents<IInitializeHandler>();
+            
+            await initializeHandlers.ForEachAsync(handler => handler.InitializeAsync());
+            
+            await Assets.ForEachAsync(asset => !initializeHandlers.Contains(asset) ? asset.InitializeAsync() : UniTask.CompletedTask);
         }
 
         /// <summary>
@@ -81,13 +94,44 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </param>
         public async UniTask Connect(int index = 0)
         {
+            // In case of a reconnect
+            if (Connected)
+            {
+                await Disconnect();
+            }
+            
             Web3 = await WalletProvider.Connect(index);
 
+            Web3.Client.OverridingRequestInterceptor = new TransactionInterceptor();
+            
             IWeb3Initialized[] connectedHandlers = GetComponents<IWeb3Initialized>();
             
             await connectedHandlers.ForEachAsync(handler => handler.Connected(Web3));
             
             await Assets.ForEachAsync(asset => !connectedHandlers.Contains(asset) ? asset.Connected(Web3) : UniTask.CompletedTask);
+        }
+        
+        /// <summary>
+        /// Tears down the active wallet session. Calls <see cref="IDisconnectedHandler.Disconnected"/>
+        /// on all components and configured <see cref="Assets"/>, then disconnects the
+        /// <see cref="IWalletProvider"/> and clears <see cref="Web3"/>.
+        /// <para>
+        /// Called automatically by <see cref="Connect"/> when reconnecting and on
+        /// <c>OnDestroy</c>. Can also be called manually to log out.
+        /// </para>
+        /// </summary>
+        public async UniTask Disconnect()
+        {
+            IDisconnectedHandler[] disconnectedHandlers = GetComponents<IDisconnectedHandler>();
+            
+            await disconnectedHandlers.ForEachAsync(handler => handler.Disconnected());
+
+            await Assets.ForEachAsync(asset => !disconnectedHandlers.Contains(asset) ? asset.Disconnected() : UniTask.CompletedTask);
+            
+            // Disconnect Wallet last
+            await WalletProvider.Disconnect();
+            
+            Web3 = null;
         }
 
         /// <summary>
@@ -139,13 +183,14 @@ namespace Io.ChainSafe.OpenCreatorRails
         
         private async void OnDestroy()
         {
-            Instance = null;
-
-            Web3 = null;
-
-            if (WalletProvider != null)
+            if (Instance != this)
             {
-                await WalletProvider.Disconnect();
+                return;
+            }
+
+            if (Connected)
+            {
+                await Disconnect();
             }
         }
     }

@@ -13,6 +13,7 @@ using NUnit.Framework;
 
 namespace Tests.Runtime
 {
+    [TestFixture]
     public class PonderIndexerProviderTests : TestsBase
     {
         // Pre-seeded registry and asset from the Demo scene / seed-local.sh.
@@ -39,7 +40,7 @@ namespace Tests.Runtime
             var dto = await IndexerProvider.GetAsset(ExistingAssetId.Keccack256(), RegistryAddress);
 
             Assert.IsFalse(string.IsNullOrEmpty(dto.Address.Value));
-            
+
             Assert.AreEqual(dto.Address.Value, "0xcafac3dd18ac6c6e92c921884f9e4176737c052c");
         }
 
@@ -60,7 +61,7 @@ namespace Tests.Runtime
             {
                 Assert.Pass();
             }
-            
+
             Assert.Fail();
         }
 
@@ -87,58 +88,65 @@ namespace Tests.Runtime
             // bytes32 for the contract call: keccak256(assetIdString) → hex string → raw bytes
             byte[] assetIdBytes32 = assetIdString.Keccack256().HexToByteArray();
 
-            BigInteger subscriptionPrice    = new BigInteger(500);
+            BigInteger subscriptionPrice = new BigInteger(500);
             BigInteger subscriptionDuration = new BigInteger(86400); // 1 day in seconds
 
             // --- 4. Create the asset and wait for the transaction to be mined ---
-            var receipt = await registryService.CreateAssetRequestAndWaitForReceiptAsync(
-                assetIdBytes32,
-                subscriptionPrice,
-                subscriptionDuration,
-                TokenAddress,
-                AssetOwnerAddress);
+            var receipt = await registryService.CreateAssetRequestAndWaitForReceiptAsync(assetIdBytes32,
+                subscriptionPrice, subscriptionDuration, TokenAddress, AssetOwnerAddress);
 
             // --- 5. Decode the AssetCreated event from the receipt to get the asset address ---
             AssetCreatedEventDTO createdEvent = receipt.DecodeAllEvents<AssetCreatedEventDTO>()[0].Event;
 
             Assert.IsNotNull(createdEvent, "AssetCreated event must be present in the receipt.");
-            Assert.IsFalse(string.IsNullOrEmpty(createdEvent.Asset),
+            Assert.IsFalse(string.IsNullOrEmpty(createdEvent.AssetAddress),
                 "AssetCreated event must carry the new asset contract address.");
 
-            //--- 6. Wait for Ponder to index the AssetCreated event ---   
-            // Ponder uses a one-second polling interval by default
-            // and since we're using a local Anvil instance confirmations are instant
-            // so we'll wait for 2 seconds (conservative)
-            await UniTask.WaitForSeconds(2f);
+            // --- 6. Poll the indexer until the asset is indexed or 10 seconds elapse ---
+            // A fixed wait is fragile when the full test suite runs: the indexer may be
+            // processing a backlog of blocks from earlier tests (AssetTests alone mines 37+
+            // permanent blocks, each triggering a ClaimableRefresh handler in Ponder).
+            // Polling retries on InvalidOperationException (empty items array) until the
+            // asset appears, giving Ponder time to drain its backlog regardless of depth.
+            AssetDto dto = default;
 
-            // --- 7. Query the indexer using the same hex-string hash ---
-            AssetDto dto = await IndexerProvider.GetAsset(assetIdString.Keccack256(), RegistryAddress);
+            int attempts = 10;
+
+            while (attempts > 0)
+            {
+                await UniTask.WaitForSeconds(1f);
+                try
+                {
+                    dto = await IndexerProvider.GetAsset(assetIdString.Keccack256(), RegistryAddress);
+                    break;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Asset not yet indexed — wait another second and retry.
+                }
+
+                attempts--;
+            }
+
+            Assert.IsFalse(string.IsNullOrEmpty(dto.Address.Value), "Asset was not indexed within 10 seconds (attempts).");
 
             // --- 8. Assert every indexed property matches what was sent to the contract ---
             Assert.IsTrue(dto.Address.Value.IsValidEthereumAddressHexFormat(),
                 "Indexed asset address must be a valid Ethereum address.");
 
-            Assert.AreEqual(
-                createdEvent.Asset.ToLower(),
-                dto.Address.Value.ToLower(),
+            Assert.AreEqual(createdEvent.AssetAddress.ToLower(), dto.Address.Value.ToLower(),
                 "Indexed asset address must match the address emitted by the AssetCreated event.");
 
             Assert.AreEqual(subscriptionPrice, dto.SubscriptionPrice,
                 "Indexed subscription price must match the value passed to createAsset.");
 
-            Assert.AreEqual(
-                TimeSpan.FromSeconds((long)subscriptionDuration),
-                dto.SubscriptionDuration,
+            Assert.AreEqual(TimeSpan.FromSeconds((long)subscriptionDuration), dto.SubscriptionDuration,
                 "Indexed subscription duration must match the value passed to createAsset.");
 
-            Assert.AreEqual(
-                AssetOwnerAddress.ToLower(),
-                dto.Owner.Value.ToLower(),
+            Assert.AreEqual(AssetOwnerAddress.ToLower(), dto.Owner.Value.ToLower(),
                 "Indexed owner must match the owner address passed to createAsset.");
 
-            Assert.AreEqual(
-                TokenAddress.ToLower(),
-                dto.TokenAddress.Value.ToLower(),
+            Assert.AreEqual(TokenAddress.ToLower(), dto.TokenAddress.Value.ToLower(),
                 "Indexed token address must match the token address passed to createAsset.");
         }
     }

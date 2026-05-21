@@ -14,7 +14,7 @@ namespace Io.ChainSafe.OpenCreatorRails
     /// Represents an on-chain asset managed by an <c>AssetRegistry</c> contract.
     /// Exposes the asset's configuration, and all relevant subscriber and owner operations.
     /// </summary>
-    public interface IAsset : IWeb3Initialized
+    public interface IAsset : IInitializeHandler, IWeb3Initialized, IDisconnectedHandler
     {
         /// <summary>Address of the <c>AssetRegistry</c> contract that deployed this asset.</summary>
         public EthereumAddress RegistryAddress { get; }
@@ -66,6 +66,13 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// <summary>Low-level Nethereum service wrapper for the <c>AssetRegistry</c> that owns this asset.</summary>
         public AssetRegistryService AssetRegistryService { get; }
 
+        /// <summary>
+        /// Re-fetches the asset's full state (configuration and all subscription records) from
+        /// the indexer and updates the local cache. Use this to force a refresh outside the
+        /// normal event-driven update cycle.
+        /// </summary>
+        UniTask Refresh();
+        
         // ── Subscriber operations ──────────────────────────────────────────────
 
         /// <summary>
@@ -186,12 +193,24 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// <b>Asset Owner only</b>.
         /// </para>
         /// </summary>
-        /// <param name="subscriberId">
-        /// Plain-text subscriber identity string. The SDK derives the on-chain hash as
-        /// <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
+        /// <param name="subscriberIdHash">
+        /// Subscriber identity hash derived from <c>keccak256(abi.encode(subscriberId, subscriberAddress))</c>.
         /// </param>
         /// <returns>The amount of creator fee claimed, in the token's smallest unit.</returns>
-        UniTask<BigInteger> ClaimCreatorFee(string subscriberId);
+        UniTask<BigInteger> ClaimCreatorFee(string subscriberIdHash);
+        
+        /// <summary>
+        /// Claims all accrued creator fees for a single subscriber, using an explicit subscriber
+        /// address to compute the identity hash.
+        /// <para><b>Asset Owner only</b>.</para>
+        /// </summary>
+        /// <param name="subscriberId">The plain-text subscriber identity string.</param>
+        /// <param name="subscriberAddress">
+        /// The wallet address bound to the subscriber identity. The on-chain hash is derived as
+        /// <c>keccak256(abi.encode(subscriberId, subscriberAddress))</c>.
+        /// </param>
+        /// <returns>The amount of creator fee claimed, in the token's smallest unit.</returns>
+        UniTask<BigInteger> ClaimCreatorFee(string subscriberId, EthereumAddress subscriberAddress);
 
         /// <summary>
         /// Claims accrued creator fees for multiple subscribers in a single transaction.
@@ -200,37 +219,72 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// <b>Asset Owner only</b>.
         /// </para>
         /// </summary>
-        /// <param name="subscriberIds">
-        /// Array of plain-text subscriber identity strings to claim for.
+        /// <param name="subscriberIdHashes">
+        /// Array of subscriber identity hashes derived from <c>keccak256(abi.encode(subscriberId, subscriberAddress))</c>.
         /// </param>
         /// <returns>The total creator fee claimed across all subscribers, in the token's smallest unit.</returns>
-        UniTask<BigInteger> ClaimCreatorFee(string[] subscriberIds);
+        UniTask<BigInteger> ClaimCreatorFee(string[] subscriberIdHashes);
+        
+        /// <summary>
+        /// Claims accrued creator fees for multiple subscribers in a single transaction, using
+        /// explicit subscriber addresses to compute identity hashes.
+        /// Subscribers with no accrued fee are silently skipped.
+        /// <para><b>Asset Owner only</b>.</para>
+        /// </summary>
+        /// <param name="subscribers">
+        /// Array of <c>(subscriberId, subscriberAddress)</c> pairs. Each identity hash is derived as
+        /// <c>keccak256(abi.encode(subscriberId, subscriberAddress))</c>.
+        /// </param>
+        /// <returns>The total creator fee claimed across all subscribers, in the token's smallest unit.</returns>
+        UniTask<BigInteger> ClaimCreatorFee((string subscriberId, EthereumAddress subscriberAddress)[] subscribers);
 
         /// <summary>
         /// Revokes a subscriber's subscription and immediately terminating their access.
         /// All remaining time (including partial-period dust) is refunded to the original payer(s).
         /// The subscriber is permanently blocked from resubscribing and cancelling until
-        /// <see cref="UnrevokeSubscription"/> is called.
+        /// <see cref="UnrevokeSubscription(string)"/> is called.
         /// <para>
         /// <b>Asset Owner only</b>.
         /// </para>
         /// </summary>
-        /// <param name="subscriberId">
-        /// Plain-text subscriber identity string. The SDK derives the on-chain hash as
-        /// <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
+        /// <param name="subscriberIdHash">
+        /// Subscriber identity hash derived from <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
         /// </param>
-        UniTask RevokeSubscription(string subscriberId);
+        UniTask RevokeSubscription(string subscriberIdHash);
 
+        /// <summary>
+        /// Revokes a subscriber's subscription using an explicit subscriber address to compute
+        /// the identity hash.
+        /// <para><b>Asset Owner only</b>.</para>
+        /// </summary>
+        /// <param name="subscriberId">The plain-text subscriber identity string.</param>
+        /// <param name="subscriberAddress">
+        /// The wallet address bound to the subscriber identity. The on-chain hash is derived as
+        /// <c>keccak256(abi.encode(subscriberId, subscriberAddress))</c>.
+        /// </param>
+        UniTask RevokeSubscription(string subscriberId, EthereumAddress subscriberAddress);
+        
         /// <summary>
         /// Lifts a permanent revocation for a subscriber, allowing them to resubscribe.
         /// <para>
         /// <b>Asset Owner only</b>.
         /// </para>
         /// </summary>
-        /// <param name="subscriberId">
-        /// Plain-text subscriber identity string. The SDK derives the on-chain hash as
-        /// <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
+        /// <param name="subscriberIdHash">
+        /// Subscriber identity hash derived from <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
         /// </param>
-        UniTask UnrevokeSubscription(string subscriberId);
+        UniTask UnrevokeSubscription(string subscriberIdHash);
+        
+        /// <summary>
+        /// Lifts a permanent revocation for a subscriber using an explicit subscriber address to
+        /// compute the identity hash.
+        /// <para><b>Asset Owner only</b>.</para>
+        /// </summary>
+        /// <param name="subscriberId">The plain-text subscriber identity string.</param>
+        /// <param name="subscriberAddress">
+        /// The wallet address bound to the subscriber identity. The on-chain hash is derived as
+        /// <c>keccak256(abi.encode(subscriberId, subscriberAddress))</c>.
+        /// </param>
+        UniTask UnrevokeSubscription(string subscriberId, EthereumAddress subscriberAddress);
     }
 }
