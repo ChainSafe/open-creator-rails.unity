@@ -177,5 +177,33 @@ namespace Tests.Runtime
 
             Assert.IsFalse(delegateCalled, "Delegate must not be called when no events were emitted in the polled range.");
         }
+
+        // -------------------------------------------------------------------------
+        // Test 5 — After unsubscribing, a subsequent poll cycle does not invoke the
+        //           removed delegate even when a matching event is emitted.
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public async Task Test_Unsubscribe_DelegateNotCalledAfterUnsubscribe()
+        {
+            int invokeCount = 0;
+
+            EventDelegate<SubscriptionPriceUpdatedEventDTO> handler = _ => invokeCount++;
+
+            // Subscribe and confirm delivery works.
+            _assetService.SubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(handler);
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(111));
+            await InvokePollAsync(Handler);
+
+            Assert.AreEqual(1, invokeCount, "Delegate must be invoked once after the first emission.");
+
+            // Unsubscribe — the delegate must no longer receive events.
+            _assetService.UnsubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(handler);
+
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(222));
+            await InvokePollAsync(Handler);
+
+            Assert.AreEqual(1, invokeCount, "Delegate must not be called after UnsubscribeToEvent.");
+        }
     }
 }

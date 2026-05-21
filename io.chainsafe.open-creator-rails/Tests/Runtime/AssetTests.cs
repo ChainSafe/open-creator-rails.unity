@@ -813,6 +813,46 @@ namespace Tests.Runtime
         }
         
         [Test]
+        public async Task Test_Refresh_UpdatesCachedState()
+        {
+            // Asset0.SubscriptionPrice is populated from the indexer via InitializeAsync → Refresh().
+            // We change the price on-chain directly through the low-level service (bypassing
+            // IAsset.SetSubscriptionPrice so the in-memory cache is NOT updated), then call
+            // Refresh() and assert the cache reflects the new on-chain value.
+            BigInteger originalPrice = Asset0.SubscriptionPrice;
+            BigInteger newPrice = new BigInteger(200);
+
+            // Set new price as owner via the low-level service (skips in-memory cache update).
+            await OpenCreatorRailsService.Instance.Connect(1);
+            await Asset0.Service.SetSubscriptionPriceRequestAndWaitForReceiptAsync(newPrice);
+
+            // The in-memory cache must still show the old price at this point.
+            Assert.AreEqual(originalPrice, Asset0.SubscriptionPrice,
+                "Cache must not change before Refresh() is called.");
+
+            // The indexer refreshes until the asset is indexed or 10 seconds elapse ---
+            // A fixed wait is fragile when the full test suite runs: the indexer may be
+            // processing a backlog of blocks from earlier tests.
+            int attempts = 10;
+            
+            for (int i = 0; i < attempts; i++)
+            {
+                // wait for 1 second
+                await UniTask.WaitForSeconds(1f);
+                // Refresh re-queries the indexer and overwrites all cached properties.
+                await Asset0.Refresh();
+
+                if (Asset0.SubscriptionPrice != originalPrice)
+                {
+                    break;
+                }
+            }
+
+            Assert.AreEqual(newPrice, Asset0.SubscriptionPrice,
+                "Asset.SubscriptionPrice must reflect the updated on-chain value after Refresh().");
+        }
+
+        [Test]
         public async Task Test_UnrevokeSubscription_TryCancel()
         {
             // Subscribe for 1 period

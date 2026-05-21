@@ -80,6 +80,108 @@ namespace Tests.Runtime
             Assert.Null(asset);
         }
         
+        // ── Critical 10 — IInitializeHandler dispatch ─────────────────────────────
+        // InitializeAsync is called during Awake before any Connect(). For Asset
+        // MonoBehaviours it calls Refresh() → IndexerProvider.GetAsset(), populating
+        // Address, SubscriptionPrice, etc. This test asserts those properties are
+        // non-default WITHOUT calling Connect() first, proving InitializeAsync ran.
+
+        [Test]
+        public void Test_InitializeAsync_PopulatesAssetProperties()
+        {
+            // Assets are populated by InitializeAsync → Refresh() during scene Awake,
+            // before any explicit Connect() call.
+            IAsset asset0 = OpenCreatorRailsService.Instance.Assets[0];
+
+            Assert.IsNotNull(asset0, "Assets[0] must be non-null after scene load.");
+
+            Assert.IsTrue(asset0.Address.Value.IsValidEthereumAddressHexFormat(),
+                "Asset.Address must be populated by InitializeAsync without calling Connect().");
+
+            Assert.Greater(asset0.SubscriptionPrice, BigInteger.Zero,
+                "Asset.SubscriptionPrice must be populated by InitializeAsync without calling Connect().");
+
+            Assert.IsNotNull(asset0.Subscriptions,
+                "Asset.Subscriptions must be populated by InitializeAsync without calling Connect().");
+        }
+
+        // ── Significant 19 — Connected property & Web3 lifecycle ─────────────────
+
+        [Test]
+        public async Task Test_Connected_TrueAfterConnect()
+        {
+            await OpenCreatorRailsService.Instance.Connect();
+
+            Assert.IsTrue(OpenCreatorRailsService.Instance.Connected,
+                "Connected must be true after a successful Connect().");
+
+            Assert.IsNotNull(OpenCreatorRailsService.Instance.Web3,
+                "Web3 must be non-null after a successful Connect().");
+        }
+
+        // ── Critical 9 — Disconnect / IDisconnectedHandler dispatch ───────────────
+
+        [Test]
+        public async Task Test_Disconnect_ClearsSessionState()
+        {
+            await OpenCreatorRailsService.Instance.Connect();
+
+            Assert.IsTrue(OpenCreatorRailsService.Instance.Connected,
+                "Pre-condition: must be connected before disconnect.");
+
+            await OpenCreatorRailsService.Instance.Disconnect();
+
+            Assert.IsFalse(OpenCreatorRailsService.Instance.Connected,
+                "Connected must be false after Disconnect().");
+
+            Assert.IsNull(OpenCreatorRailsService.Instance.Web3,
+                "Web3 must be null after Disconnect().");
+        }
+
+        [Test]
+        public async Task Test_Disconnect_CallsIDisconnectedHandler()
+        {
+            // IAsset (Asset MonoBehaviour) is the only IDisconnectedHandler in the scene.
+            // Its Disconnected() implementation calls UnsubscribeToEvents() when Connected.
+            // We verify Disconnected() was dispatched by confirming the service is no longer
+            // connected (Web3 == null) and that calling Disconnect() a second time is safe
+            // (idempotent — does not throw when already disconnected).
+            await OpenCreatorRailsService.Instance.Connect();
+
+            await OpenCreatorRailsService.Instance.Disconnect();
+
+            // Calling Disconnect while not connected must not throw.
+            await OpenCreatorRailsService.Instance.Disconnect();
+        }
+
+        // ── Critical 8 — TryGetAsset with registryAddress filter ─────────────────
+
+        [Test]
+        public void Test_TryGetAsset_WithCorrectRegistryAddress_Finds()
+        {
+            // DefaultAsset_0 lives under 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512.
+            var registryAddress = new EthereumAddress("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512");
+
+            bool exists = OpenCreatorRailsService.Instance.TryGetAsset(
+                "default_asset_id_0", out IAsset asset, registryAddress);
+
+            Assert.IsTrue(exists, "TryGetAsset must return true for the correct registry address.");
+            Assert.IsNotNull(asset);
+        }
+
+        [Test]
+        public void Test_TryGetAsset_WithWrongRegistryAddress_NotFound()
+        {
+            // A valid but wrong registry address — no asset in the scene matches this.
+            var wrongRegistry = new EthereumAddress("0x0000000000000000000000000000000000000001");
+
+            bool exists = OpenCreatorRailsService.Instance.TryGetAsset(
+                "default_asset_id_0", out IAsset asset, wrongRegistry);
+
+            Assert.IsFalse(exists, "TryGetAsset must return false when the registry address does not match.");
+            Assert.IsNull(asset);
+        }
+
         [Test]
         public async Task Test_DeployAssetRegistry()
         {

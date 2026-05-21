@@ -35,6 +35,8 @@ namespace Io.ChainSafe.OpenCreatorRails
         private float _time;
 
         private readonly HashSet<string> _hashes = new HashSet<string>();
+
+        private readonly Dictionary<Delegate, Func<UniTask>> _subscriptions = new Dictionary<Delegate, Func<UniTask>>();
         
         private void OnEnable()
         {
@@ -77,14 +79,21 @@ namespace Io.ChainSafe.OpenCreatorRails
         {
             Event<T> @event = web3.Eth.GetEvent<T>(address.Value);
 
-            _pollEvent += () => FilterAndInvoke(@event, web3, @delegate);
+            UniTask Poll() => FilterAndInvoke(@event, web3, @delegate);
+
+            _subscriptions[@delegate] = Poll;
+            
+            _pollEvent += Poll;
         }
         
         public void Unsubscribe<T>(EthereumAddress address, IWeb3 web3, EventDelegate<T> @delegate) where T : IEventDTO, new()
         {
-            Event<T> @event = web3.Eth.GetEvent<T>(address.Value);
-
-            _pollEvent -= () => FilterAndInvoke(@event, web3, @delegate);
+            if (_subscriptions.TryGetValue(@delegate, out Func<UniTask> poll))
+            {
+                _pollEvent -= poll;
+                
+                _subscriptions.Remove(@delegate);
+            }
         }
 
         private async UniTaskVoid UpdateLoopAsync(CancellationToken cancellationToken)
