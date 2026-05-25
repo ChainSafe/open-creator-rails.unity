@@ -112,5 +112,12 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
                 .GetABIEncoded()
                 .Keccack256();
         }
+        
+        public static decimal PowerOfTen(this BigInteger exponent)
+        {
+            decimal result = 1m;
+            for (int i = 0; i < exponent; i++) result *= 10m;
+            return result;
+        }
     }
 }

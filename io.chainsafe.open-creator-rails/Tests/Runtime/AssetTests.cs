@@ -22,8 +22,8 @@ namespace Tests.Runtime
         // Anvil account addresses (standard test mnemonic HD indices).
         // Account 1 is the owner of DefaultAsset_0.
         private const string Account1Address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
-        // Account 4 has 1000 TEST allocated w/ the seed script.
-        private const string Account4Address = "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65";
+        // Account 5 - 11 are seeded w/ 1000 TEST tokens.
+        private const string Account5Address = "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc";
         
         // DefaultAsset_0: owner = account 1, subscriptionPrice = 100, subscriptionDuration = 100s.
         private IAsset Asset0 => OpenCreatorRailsService.Instance.Assets[0];
@@ -33,8 +33,8 @@ namespace Tests.Runtime
         {
             await base.SetUp();
             
-            // Connect as account 4 (subscriber seeded w/ 1000 TEST).
-            await OpenCreatorRailsService.Instance.Connect(4);
+            // Connect as account 5 (subscriber seeded w/ 1000 TEST).
+            await OpenCreatorRailsService.Instance.Connect(5);
         }
 
         [TearDown]
@@ -250,7 +250,7 @@ namespace Tests.Runtime
             Assert.AreEqual(subscription.EndTime, expiry);
             Assert.AreEqual(subscription.SubscriptionPrice, Asset0.SubscriptionPrice);
             Assert.AreEqual(subscription.RegistryFeeShare, await Asset0.AssetRegistryService.GetRegistryFeeShareQueryAsync());
-            Assert.AreEqual(subscription.Payer.Value, Account4Address);
+            Assert.AreEqual(subscription.Payer.Value, Account5Address);
             Assert.AreEqual(subscription.IsExpired, false);
             Assert.AreEqual(subscription.IsRevoked, false);
             Assert.AreEqual(subscription.IsActive, true);
@@ -295,7 +295,7 @@ namespace Tests.Runtime
             await Asset0.SetSubscriptionPrice(new BigInteger(new Random().Next(1, 101) * 100));
 
             // Subscriber
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             DateTime newExpiry = await Asset0.Subscribe(subscriberId, new BigInteger(1));
 
             var subscriptions = Asset0.Subscriptions.Where(subscription => subscription.SubscriberIdHash == subscribersIdHash).ToList();
@@ -367,7 +367,7 @@ namespace Tests.Runtime
             }
 
             // Subscribe again for 1 Period (new nonce)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             await Asset0.Subscribe(subscriberId, new BigInteger(1));
 
             // Wait for 1 second
@@ -386,14 +386,14 @@ namespace Tests.Runtime
         public async Task Test_CancelSubscription_Refund()
         {
             // Get balance of token in connected account
-            BigInteger balanceBefore = await Asset0.PermitService.BalanceOfQueryAsync(Account4Address);
+            BigInteger balanceBefore = await Asset0.PermitService.BalanceOfQueryAsync(Account5Address);
 
             // Subscribe for 3 periods
             string subscriberId = NewSubscriberId();
             await Asset0.Subscribe(subscriberId, new BigInteger(3));
 
             // Get balance of token in connected account again
-            BigInteger balanceAfterSubscribe = await Asset0.PermitService.BalanceOfQueryAsync(Account4Address);
+            BigInteger balanceAfterSubscribe = await Asset0.PermitService.BalanceOfQueryAsync(Account5Address);
 
             // Assert 3x subscription price was deducted
             Assert.AreEqual(balanceBefore - balanceAfterSubscribe, Asset0.SubscriptionPrice * 3);
@@ -405,7 +405,7 @@ namespace Tests.Runtime
             await Asset0.CancelSubscription(subscriberId);
 
             // Get balance of token in connected account againte
-            BigInteger balanceAfterCancel = await Asset0.PermitService.BalanceOfQueryAsync(Account4Address);
+            BigInteger balanceAfterCancel = await Asset0.PermitService.BalanceOfQueryAsync(Account5Address);
 
             // Check if 2x subscription price was refunded
             Assert.AreEqual(balanceAfterCancel - balanceAfterSubscribe, Asset0.SubscriptionPrice * 2);
@@ -438,7 +438,7 @@ namespace Tests.Runtime
             BigInteger ownerBalanceBefore = await Asset0.PermitService.BalanceOfQueryAsync(Account1Address);
 
             // Subscribe for 3 periods
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             string subscriberId = NewSubscriberId();
             await Asset0.Subscribe(subscriberId, new BigInteger(3));
 
@@ -450,7 +450,7 @@ namespace Tests.Runtime
             await OpenCreatorRailsService.Instance.Connect(1);
 
             // claimCreatorFee
-            BigInteger claimed = await Asset0.ClaimCreatorFee(subscriberId, new EthereumAddress(Account4Address));
+            BigInteger claimed = await Asset0.ClaimCreatorFee(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert claimed/returned amount > 0
             Assert.Greater(claimed, BigInteger.Zero);
@@ -467,7 +467,7 @@ namespace Tests.Runtime
             BigInteger ownerBalanceBefore = await Asset0.PermitService.BalanceOfQueryAsync(Account1Address);
 
             // Subscribe for 1, 2 and 3 periods for 3 subscribers
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             string subscriberId1 = NewSubscriberId();
             await Asset0.Subscribe(subscriberId1, new BigInteger(1));
             string subscriberId2 = NewSubscriberId();
@@ -483,7 +483,7 @@ namespace Tests.Runtime
             await OpenCreatorRailsService.Instance.Connect(1);
 
             // claimCreatorFee batch
-            var subscriberAddress = new EthereumAddress(Account4Address);
+            var subscriberAddress = new EthereumAddress(Account5Address);
             BigInteger total = await Asset0.ClaimCreatorFee(new (string, EthereumAddress)[]
             {
                 (subscriberId1, subscriberAddress),
@@ -513,10 +513,10 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Fetch current expiration (connected as account 4 so ToSubscriberIdHash uses correct address)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             DateTime currentExpiry = await Asset0.GetSubscriptionExpiration(subscriberId);
 
             // Assert current expiry is less than subscription expiry
@@ -540,10 +540,10 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert isRevoked for subscriber is true (connected as account 4 for correct hash)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             Assert.IsTrue(await Asset0.IsSubscriberRevoked(subscriberId));
         }
         
@@ -564,10 +564,10 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert isActive for subscriber is false (connected as account 4 for correct hash)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             Assert.IsFalse(await Asset0.IsSubscriptionActive(subscriberId));
         }
         
@@ -585,10 +585,10 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Try to subscribe and Assert that it throws OnlyUnrevokedUnauthorizedSubscriberError
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             try
             {
                 await Asset0.Subscribe(subscriberId, new BigInteger(1));
@@ -615,10 +615,10 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Try to cancel subscription and Assert that it throws OnlyUnrevokedUnauthorizedSubscriberError
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             try
             {
                 await Asset0.CancelSubscription(subscriberId);
@@ -645,10 +645,10 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert current expiry in Asset0.Subscriptions < subscribing expiry
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             string subscribersIdHash = _cachedSubscriber.ToSubscriberIdHash().ToHex(true);
             var subscription = Asset0.Subscriptions.First(s => s.SubscriberIdHash == subscribersIdHash);
             Assert.Less(subscription.EndTime, expiry);
@@ -667,7 +667,7 @@ namespace Tests.Runtime
             await Asset0.SetSubscriptionPrice(new BigInteger(new Random().Next(1, 101) * 100));
 
             // Subscribe again for 1 Period (new nonce)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             await Asset0.Subscribe(subscriberId, new BigInteger(1));
 
             // Connect to Asset Owner
@@ -677,10 +677,10 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke Subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert that there's only one subscription matching this subscriber in Asset0.Subscriptions and its Nonce == 0
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             string subscribersIdHash = _cachedSubscriber.ToSubscriberIdHash().ToHex(true);
             var subscriptions = Asset0.Subscriptions.Where(s => s.SubscriberIdHash == subscribersIdHash).ToList();
             Assert.AreEqual(1, subscriptions.Count);
@@ -691,14 +691,14 @@ namespace Tests.Runtime
         public async Task Test_RevokeSubscription_Refund()
         {
             // Get balance of token in connected account
-            BigInteger balanceBefore = await Asset0.PermitService.BalanceOfQueryAsync(Account4Address);
+            BigInteger balanceBefore = await Asset0.PermitService.BalanceOfQueryAsync(Account5Address);
 
             // Subscribe for 3 periods
             string subscriberId = NewSubscriberId();
             await Asset0.Subscribe(subscriberId, new BigInteger(3));
 
             // Get balance of token in connected account again
-            BigInteger balanceAfterSubscribe = await Asset0.PermitService.BalanceOfQueryAsync(Account4Address);
+            BigInteger balanceAfterSubscribe = await Asset0.PermitService.BalanceOfQueryAsync(Account5Address);
 
             // Assert 3x subscription price was deducted
             Assert.AreEqual(balanceBefore - balanceAfterSubscribe, Asset0.SubscriptionPrice * 3);
@@ -708,11 +708,11 @@ namespace Tests.Runtime
 
             // Revoke Subscription (owner revokes on behalf of subscriber)
             await OpenCreatorRailsService.Instance.Connect(1);
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Get balance of token in connected account again (query while connected as account 4)
-            await OpenCreatorRailsService.Instance.Connect(4);
-            BigInteger balanceAfterRevoke = await Asset0.PermitService.BalanceOfQueryAsync(Account4Address);
+            await OpenCreatorRailsService.Instance.Connect(5);
+            BigInteger balanceAfterRevoke = await Asset0.PermitService.BalanceOfQueryAsync(Account5Address);
 
             // Check if > 2x subscription price was refunded (revoke refunds remaining time including partial period)
             Assert.Greater(balanceAfterRevoke - balanceAfterSubscribe, Asset0.SubscriptionPrice * 2);
@@ -735,18 +735,18 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert isRevoked is true (connected as account 4 for correct hash)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             Assert.IsTrue(await Asset0.IsSubscriberRevoked(subscriberId));
 
             // UnrevokeSubscription
             await OpenCreatorRailsService.Instance.Connect(1);
-            await Asset0.UnrevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.UnrevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert isRevoked is false again (connected as account 4 for correct hash)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             Assert.IsFalse(await Asset0.IsSubscriberRevoked(subscriberId));
         }
         
@@ -767,18 +767,18 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert isActive is false (connected as account 4 for correct hash)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             Assert.IsFalse(await Asset0.IsSubscriptionActive(subscriberId));
 
             // UnrevokeSubscription
             await OpenCreatorRailsService.Instance.Connect(1);
-            await Asset0.UnrevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.UnrevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert isActive is false again since revoke expired it (connected as account 4 for correct hash)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             Assert.IsFalse(await Asset0.IsSubscriptionActive(subscriberId));
         }
         
@@ -796,18 +796,18 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert isRevoked is true (connected as account 4 for correct hash)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             Assert.IsTrue(await Asset0.IsSubscriberRevoked(subscriberId));
 
             // UnrevokeSubscription
             await OpenCreatorRailsService.Instance.Connect(1);
-            await Asset0.UnrevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.UnrevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert Subscribing again doesn't throw
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             await Asset0.Subscribe(subscriberId, new BigInteger(1));
             Assert.Pass();
         }
@@ -866,18 +866,18 @@ namespace Tests.Runtime
             await UniTask.WaitForSeconds(1f);
 
             // Revoke subscription
-            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.RevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert isRevoked is true (connected as account 4 for correct hash)
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             Assert.IsTrue(await Asset0.IsSubscriberRevoked(subscriberId));
 
             // UnrevokeSubscription
             await OpenCreatorRailsService.Instance.Connect(1);
-            await Asset0.UnrevokeSubscription(subscriberId, new EthereumAddress(Account4Address));
+            await Asset0.UnrevokeSubscription(subscriberId, new EthereumAddress(Account5Address));
 
             // Assert Cancelling subscription doesn't throw
-            await OpenCreatorRailsService.Instance.Connect(4);
+            await OpenCreatorRailsService.Instance.Connect(5);
             await Asset0.CancelSubscription(subscriberId);
             Assert.Pass();
         }

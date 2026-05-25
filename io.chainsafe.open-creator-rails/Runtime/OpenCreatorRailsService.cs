@@ -17,10 +17,8 @@ namespace Io.ChainSafe.OpenCreatorRails
     /// and <see cref="IEventHandler"/> implementations. The GameObject is marked
     /// <c>DontDestroyOnLoad</c> and only one instance, <see cref="OpenCreatorRailsService.Instance"/>, may exist at a time.
     /// </summary>
-    public class OpenCreatorRailsService : MonoBehaviour
+    public class OpenCreatorRailsService : Singleton<OpenCreatorRailsService>
     {
-        public static OpenCreatorRailsService Instance { get; private set; }
-
         public static ABIEncode ABIEncode { get; private set; } =  new ABIEncode();
 
         /// <summary>
@@ -57,24 +55,18 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// The list of <see cref="IAsset"/> instances configured on this service in the Inspector.
         /// Each asset is populated with on-chain state after <see cref="Connect"/> completes.
         /// </summary>
-        public List<IAsset> Assets => _assets.ConvertAll(asset => (IAsset) asset);
+        public List<IAsset> Assets { get; private set; }
 
-        private async void Awake()
+        protected override async void Awake()
         {
-            if (Instance != null)
-            {
-                Debug.LogError($"There is more than one instance of {nameof(OpenCreatorRailsService)}");
-                
-                return;
-            }
-
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            base.Awake();
             
             // Assign / Reference
             WalletProvider = GetComponent<IWalletProvider>();
             IndexerProvider = GetComponent<IIndexerProvider>();
             EventHandler = GetComponent<IEventHandler>();
+            
+            Assets = new List<IAsset>(_assets);
             
             // Initialize
             IInitializeHandler[] initializeHandlers = GetComponents<IInitializeHandler>();
@@ -134,6 +126,24 @@ namespace Io.ChainSafe.OpenCreatorRails
             Web3 = null;
         }
 
+        public async UniTask<bool> TryAddAsset(IAsset asset)
+        {
+            if (Assets.Contains(asset) ||
+                Assets.Any(a => a.AssetId == asset.AssetId && a.RegistryAddress == asset.RegistryAddress))
+            {
+                return false;
+            }
+
+            Assets.Add(asset);
+
+            if (Connected)
+            {
+                await asset.Connected(Web3);
+            }
+
+            return true;
+        }
+        
         /// <summary>
         /// Looks up a configured asset by its human-readable ID and optional registry address.
         /// </summary>
@@ -181,7 +191,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             return new AssetRegistryService(Instance.Web3, address.Value);
         }
         
-        private async void OnDestroy()
+        protected override async void OnDestroy()
         {
             if (Instance != this)
             {
@@ -192,6 +202,8 @@ namespace Io.ChainSafe.OpenCreatorRails
             {
                 await Disconnect();
             }
+            
+            base.OnDestroy();
         }
     }
 }

@@ -6,7 +6,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
     [RequireComponent(typeof(Rigidbody))]
     public class MovementController : MonoBehaviour
     {
-        [SerializeField] private InputAction _movementInputAction;
         [SerializeField] private float _speed = 5f;
 
         private Vector3 _moveDirection;
@@ -15,16 +14,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
 
         private Transform _cameraTransform;
 
-        private void OnEnable()
-        {
-            _movementInputAction.Enable();
-        }
-
-        private void OnDisable()
-        {
-            _movementInputAction.Disable();
-        }
-
+        private InputAction MovementInputAction => Player.Instance.MovementInputAction;
+        
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
@@ -37,7 +28,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
 
         private void Update()
         {
-            Vector2 moveInput = _movementInputAction.ReadValue<Vector2>();
+            Vector2 moveInput = MovementInputAction.ReadValue<Vector2>();
             
             Vector3 forward = _cameraTransform.forward;
             Vector3 right = _cameraTransform.right;

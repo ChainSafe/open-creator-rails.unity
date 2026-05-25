@@ -50,6 +50,10 @@ namespace Io.ChainSafe.OpenCreatorRails
         public EthereumAddress Owner { get; private set; }
 
         public EthereumAddress TokenAddress { get; private set; }
+        
+        public string TokenSymbol { get; private set; }
+        
+        public BigInteger TokenDecimals { get; private set; }
 
         public List<SubscriptionDto> Subscriptions { get; private set; }
 
@@ -72,6 +76,10 @@ namespace Io.ChainSafe.OpenCreatorRails
         {
             Service = new AssetService(web3, Address.Value);
             PermitService = new ERC20PermitService(web3, TokenAddress.Value);
+
+            TokenSymbol = await PermitService.SymbolQueryAsync();
+            TokenDecimals = await PermitService.DecimalsQueryAsync();
+            
             AssetRegistryService = new AssetRegistryService(web3, RegistryAddress.Value);
 
             if (_domain == null)
