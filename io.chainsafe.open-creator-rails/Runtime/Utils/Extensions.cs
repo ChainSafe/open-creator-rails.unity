@@ -143,10 +143,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         
         public static void DecodeAndHandleEvents<T>(this TransactionReceipt receipt, List<IAssetEventHandler<T>> eventHandlers) where T : IEventDTO, new()
         {
-            foreach (EventLog<T> log in receipt.DecodeAllEvents<T>())
-            {
-                eventHandlers.HandleEvents(log.Event);
-            }
+            receipt.DecodeAllEvents<T>().ForEach(log => eventHandlers.HandleEvents(log.Event));
         }
         
         public static void DecodeAndHandleEvents<T>(this TransactionReceipt receipt, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
