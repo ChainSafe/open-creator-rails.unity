@@ -57,10 +57,17 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </summary>
         public List<IAsset> Assets { get; private set; }
 
+        public bool Initialized { get; private set; } = false;
+        
         protected override async void Awake()
         {
             base.Awake();
-            
+
+            await Initialize();
+        }
+
+        private async UniTask Initialize()
+        {
             // Assign / Reference
             WalletProvider = GetComponent<IWalletProvider>();
             IndexerProvider = GetComponent<IIndexerProvider>();
@@ -74,8 +81,10 @@ namespace Io.ChainSafe.OpenCreatorRails
             await initializeHandlers.ForEachAsync(handler => handler.InitializeAsync());
             
             await Assets.ForEachAsync(asset => !initializeHandlers.Contains(asset) ? asset.InitializeAsync() : UniTask.CompletedTask);
-        }
 
+            Initialized = true;
+        }
+        
         /// <summary>
         /// Connects the wallet at the given HD Wallet index, then initializes all
         /// <see cref="IWeb3Initialized"/> components and all configured <see cref="Assets"/>.

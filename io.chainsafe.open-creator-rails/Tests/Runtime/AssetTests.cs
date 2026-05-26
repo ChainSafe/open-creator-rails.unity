@@ -418,14 +418,14 @@ namespace Tests.Runtime
 
             // Asset Owner
             await OpenCreatorRailsService.Instance.Connect(1);
-            await Asset0.SetSubscriptionPrice(new BigInteger(999));
+            await Asset0.SetSubscriptionPrice(new BigInteger(900));
 
-            Assert.AreEqual(new BigInteger(999), Asset0.SubscriptionPrice,
+            Assert.AreEqual(new BigInteger(900), Asset0.SubscriptionPrice,
                 "Asset.SubscriptionPrice must reflect the new value after SetSubscriptionPrice.");
 
             BigInteger fetchedPrice = await Asset0.Service.GetSubscriptionPriceQueryAsync(1);
             
-            Assert.AreEqual(fetchedPrice, new BigInteger(999));
+            Assert.AreEqual(fetchedPrice, new BigInteger(900));
             
             // Restore so subsequent tests that depend on SubscriptionPrice = 1 are unaffected.
             await Asset0.SetSubscriptionPrice(originalPrice);

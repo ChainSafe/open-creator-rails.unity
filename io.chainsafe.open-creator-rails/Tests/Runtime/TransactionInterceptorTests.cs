@@ -132,7 +132,7 @@ namespace Tests.Runtime
             // Send a transaction WITH the interceptor active. The interceptor calls
             // DeduplicateEvent(hash) immediately after the RPC returns, adding the
             // hash to _hashes before InvokePollAsync runs.
-            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(555));
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(55500));
 
             // Poll: the event log will contain the SubscriptionPriceUpdated event, but
             // its transaction hash is already in _hashes → delegate must NOT fire.
@@ -151,7 +151,7 @@ namespace Tests.Runtime
         public async Task Test_Interceptor_HashAddedToDeduplicationSet()
         {
             // Send a transaction and capture the receipt to get its hash.
-            var receipt = await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(444));
+            var receipt = await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(44400));
 
             string txHash = receipt.TransactionHash;
 
@@ -182,7 +182,7 @@ namespace Tests.Runtime
             var savedInterceptor = web3.Client.OverridingRequestInterceptor;
             web3.Client.OverridingRequestInterceptor = null;
 
-            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(333));
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(33300));
 
             // Restore the interceptor.
             web3.Client.OverridingRequestInterceptor = savedInterceptor;
