@@ -70,6 +70,41 @@ namespace Tests.Runtime
         }
         
         [Test]
+        public void Test_Connected_TokenSymbolIsValid()
+        {
+            // TokenSymbol is populated in Connected() via PermitService.SymbolQueryAsync().
+            // TestToken.sol defines SYMBOL = "TEST".
+            Assert.AreEqual("TEST", Asset0.TokenSymbol,
+                "Asset.TokenSymbol must equal the on-chain ERC-20 symbol after Connected().");
+        }
+
+        [Test]
+        public void Test_Connected_TokenDecimalsIsValid()
+        {
+            // TokenDecimals is populated in Connected() via PermitService.DecimalsQueryAsync().
+            // TestToken.sol overrides decimals() to return 6.
+            Assert.AreEqual(new BigInteger(6), Asset0.TokenDecimals,
+                "Asset.TokenDecimals must equal 6 (TestToken override) after Connected().");
+        }
+
+        [Test]
+        public void Test_SubscriptionPricePrimaryUnit_MatchesExpected()
+        {
+            // SubscriptionPricePrimaryUnit is a default interface method:
+            //   (decimal)SubscriptionPrice / TokenDecimals.PowerOfTen()
+            // DefaultAsset_0: SubscriptionPrice = 100, TokenDecimals = 6
+            //   → 100 / 10^6 = 0.0001
+            decimal expected = (decimal)Asset0.SubscriptionPrice / Asset0.TokenDecimals.PowerOfTen();
+
+            Assert.AreEqual(expected, Asset0.SubscriptionPricePrimaryUnit,
+                "SubscriptionPricePrimaryUnit must equal SubscriptionPrice / 10^TokenDecimals.");
+
+            // Sanity-check against the concrete value given the seeded asset configuration.
+            Assert.AreEqual(0.0001m, Asset0.SubscriptionPricePrimaryUnit,
+                "SubscriptionPricePrimaryUnit for DefaultAsset_0 must be 0.0001 (100 / 10^6).");
+        }
+
+        [Test]
         public void Test_IsAssetIdHashValid()
         {
             Assert.AreEqual(Asset0.AssetIdHash, Asset0.AssetId.Keccack256());
