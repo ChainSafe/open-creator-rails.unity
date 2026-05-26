@@ -25,6 +25,6 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// is received from the contract.
         /// </summary>
         /// <param name="event">The decoded event data.</param>
-        void HandleEvent(T @event);
+        void InvokeAssetEvent(T @event);
     }
 }

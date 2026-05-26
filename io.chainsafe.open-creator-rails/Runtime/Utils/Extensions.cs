@@ -137,7 +137,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         /// <param name="eventHandlers">The handler list; only entries implementing <see cref="IAssetEventHandler{T}"/> are subscribed.</param>
         public static void SubscribeToEvent<T>(this ContractWeb3ServiceBase service, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
         {
-            eventHandlers.Get<T>().ForEach(handler => service.SubscribeToEvent<T>(handler.HandleEvent));
+            eventHandlers.Get<T>().ForEach(handler => service.SubscribeToEvent<T>(handler.InvokeAssetEvent));
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         /// <param name="eventHandlers">The handler list; only entries implementing <see cref="IAssetEventHandler{T}"/> are unsubscribed.</param>
         public static void UnsubscribeToEvent<T>(this ContractWeb3ServiceBase service, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
         {
-            eventHandlers.Get<T>().ForEach(handler => service.UnsubscribeToEvent<T>(handler.HandleEvent));
+            eventHandlers.Get<T>().ForEach(handler => service.UnsubscribeToEvent<T>(handler.InvokeAssetEvent));
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         /// <param name="event">The event instance to dispatch.</param>
         public static void HandleEvents<T>(this List<IAssetEventHandler<T>> eventHandlers, T @event) where T : IEventDTO, new()
         {
-            eventHandlers.ForEach(handler => handler.HandleEvent(@event));
+            eventHandlers.ForEach(handler => handler.InvokeAssetEvent(@event));
         }
 
         /// <summary>

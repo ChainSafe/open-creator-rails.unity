@@ -20,42 +20,42 @@ namespace Io.ChainSafe.OpenCreatorRails
         IAssetEventHandler<SubscriptionUnrevokedEventDTO>, IAssetEventHandler<SubscriptionRemovedEventDTO>,
         IAssetEventHandler<SubscriptionPriceUpdatedEventDTO>
     {
-        void IAssetEventHandler<SubscriptionAddedEventDTO>.HandleEvent(SubscriptionAddedEventDTO @event)
+        void IAssetEventHandler<SubscriptionAddedEventDTO>.InvokeAssetEvent(SubscriptionAddedEventDTO @event)
         {
             SubscriptionAdded(@event);
         }
 
-        void IAssetEventHandler<SubscriptionRenewedEventDTO>.HandleEvent(SubscriptionRenewedEventDTO @event)
+        void IAssetEventHandler<SubscriptionRenewedEventDTO>.InvokeAssetEvent(SubscriptionRenewedEventDTO @event)
         {
             SubscriptionRenewed(@event);
         }
 
-        void IAssetEventHandler<SubscriptionExtendedEventDTO>.HandleEvent(SubscriptionExtendedEventDTO @event)
+        void IAssetEventHandler<SubscriptionExtendedEventDTO>.InvokeAssetEvent(SubscriptionExtendedEventDTO @event)
         {
             SubscriptionExtended(@event);
         }
 
-        void IAssetEventHandler<SubscriptionCancelledEventDTO>.HandleEvent(SubscriptionCancelledEventDTO @event)
+        void IAssetEventHandler<SubscriptionCancelledEventDTO>.InvokeAssetEvent(SubscriptionCancelledEventDTO @event)
         {
             SubscriptionCancelled(@event);
         }
 
-        void IAssetEventHandler<SubscriptionRevokedEventDTO>.HandleEvent(SubscriptionRevokedEventDTO @event)
+        void IAssetEventHandler<SubscriptionRevokedEventDTO>.InvokeAssetEvent(SubscriptionRevokedEventDTO @event)
         {
             SubscriptionRevoked(@event);
         }
 
-        void IAssetEventHandler<SubscriptionUnrevokedEventDTO>.HandleEvent(SubscriptionUnrevokedEventDTO @event)
+        void IAssetEventHandler<SubscriptionUnrevokedEventDTO>.InvokeAssetEvent(SubscriptionUnrevokedEventDTO @event)
         {
             SubscriptionUnrevoked(@event);
         }
 
-        void IAssetEventHandler<SubscriptionRemovedEventDTO>.HandleEvent(SubscriptionRemovedEventDTO @event)
+        void IAssetEventHandler<SubscriptionRemovedEventDTO>.InvokeAssetEvent(SubscriptionRemovedEventDTO @event)
         {
             SubscriptionRemoved(@event);
         }
 
-        void IAssetEventHandler<SubscriptionPriceUpdatedEventDTO>.HandleEvent(SubscriptionPriceUpdatedEventDTO @event)
+        void IAssetEventHandler<SubscriptionPriceUpdatedEventDTO>.InvokeAssetEvent(SubscriptionPriceUpdatedEventDTO @event)
         {
             SubscriptionPriceUpdated(@event);
         }

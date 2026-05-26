@@ -23,17 +23,17 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
             Assets = GetComponents<IAsset>();
         }
 
-        public void HandleEvent(SubscriptionAddedEventDTO @event) => TryAccess(@event);
+        public void InvokeAssetEvent(SubscriptionAddedEventDTO @event) => TryAccess(@event);
 
-        public void HandleEvent(SubscriptionRenewedEventDTO @event) => TryAccess(@event);
+        public void InvokeAssetEvent(SubscriptionRenewedEventDTO @event) => TryAccess(@event);
 
-        public void HandleEvent(SubscriptionExtendedEventDTO @event) => TryAccess(@event);
+        public void InvokeAssetEvent(SubscriptionExtendedEventDTO @event) => TryAccess(@event);
 
-        public void HandleEvent(SubscriptionCancelledEventDTO @event) => TryAccess(@event);
+        public void InvokeAssetEvent(SubscriptionCancelledEventDTO @event) => TryAccess(@event);
 
-        public void HandleEvent(SubscriptionRevokedEventDTO @event) => TryAccess(@event);
+        public void InvokeAssetEvent(SubscriptionRevokedEventDTO @event) => TryAccess(@event);
 
-        public void HandleEvent(SubscriptionRemovedEventDTO @event) => TryAccess(@event);
+        public void InvokeAssetEvent(SubscriptionRemovedEventDTO @event) => TryAccess(@event);
 
         public async UniTask<bool> TryAccess()
         {
