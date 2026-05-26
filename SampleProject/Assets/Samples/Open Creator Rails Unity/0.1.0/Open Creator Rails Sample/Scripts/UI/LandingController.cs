@@ -24,8 +24,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
                     await OpenCreatorRailsService.Instance.Connect(5);
                     
                     UIController.Instance.Unload();
-                    
-                    Cursor.lockState = CursorLockMode.Locked;
                 });
             };
             
@@ -34,8 +32,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
                 UIController.Instance.LoadOverlay(async () =>
                 {
                     await OpenCreatorRailsService.Instance.Disconnect();
-                    
-                    Cursor.lockState = CursorLockMode.None;
                 });
             };
 

@@ -57,6 +57,9 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </summary>
         public List<IAsset> Assets { get; private set; }
 
+        /// <summary>
+        /// <c>true</c> once <see cref="OpenCreatorRailsService"/> has initialized.
+        /// </summary>
         public bool Initialized { get; private set; } = false;
         
         protected override async void Awake()
@@ -139,6 +142,13 @@ namespace Io.ChainSafe.OpenCreatorRails
             Web3 = null;
         }
 
+        /// <summary>
+        /// Registers a new asset at runtime. If the asset instance or another asset with the same
+        /// <c>AssetId</c> and <c>RegistryAddress</c> is already present, returns <c>false</c>
+        /// without modifying the list. Otherwise, adds the asset and initializes it accordingly.
+        /// </summary>
+        /// <param name="asset">The asset to register.</param>
+        /// <returns><c>true</c> if the asset was added; <c>false</c> if it was already present.</returns>
         public async UniTask<bool> TryAddAsset(IAsset asset)
         {
             if (Assets.Contains(asset) ||

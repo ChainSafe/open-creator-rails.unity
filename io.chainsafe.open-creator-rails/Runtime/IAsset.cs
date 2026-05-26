@@ -37,6 +37,11 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </summary>
         public BigInteger SubscriptionPrice { get; }
 
+        /// <summary>
+        /// <see cref="SubscriptionPrice"/> expressed in the token's primary unit, computed as
+        /// <c>SubscriptionPrice / 10^TokenDecimals</c>. Convenience wrapper for display purposes.
+        /// Read-only.
+        /// </summary>
         public decimal SubscriptionPricePrimaryUnit => (decimal)SubscriptionPrice / TokenDecimals.PowerOfTen();
 
         /// <summary>Fixed length of one subscription period. Subscriptions are always whole multiples of this duration.</summary>
@@ -53,8 +58,12 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </summary>
         public EthereumAddress TokenAddress { get; }
 
+        /// <summary>Ticker symbol of the ERC-20 payment token (e.g. <c>"USDC"</c>).</summary>
         public string TokenSymbol { get; }
 
+        /// <summary>
+        /// Decimal precision of the ERC-20 payment token (e.g. <c>18</c> for most tokens, <c>6</c> for USDC).
+        /// </summary>
         public BigInteger TokenDecimals { get; }
 
         /// <summary>

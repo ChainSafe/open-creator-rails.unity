@@ -116,41 +116,96 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
                 .Keccack256();
         }
 
+        /// <summary>
+        /// Filters <paramref name="eventHandlers"/> to those that implement
+        /// <see cref="IAssetEventHandler{T}"/> for the given event type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The event DTO type to filter by.</typeparam>
+        /// <param name="eventHandlers">The untyped handler list to filter.</param>
+        /// <returns>A new list containing only the handlers that implement <see cref="IAssetEventHandler{T}"/>.</returns>
         public static List<IAssetEventHandler<T>> Get<T>(this List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
         {
             return eventHandlers.OfType<IAssetEventHandler<T>>().ToList();
         }
-        
+
+        /// <summary>
+        /// Subscribes all <see cref="IAssetEventHandler{T}"/> entries in <paramref name="eventHandlers"/>
+        /// to events of type <typeparamref name="T"/> emitted by <paramref name="service"/>'s contract.
+        /// </summary>
+        /// <typeparam name="T">The event DTO type to subscribe to.</typeparam>
+        /// <param name="service">The contract service whose events to listen on.</param>
+        /// <param name="eventHandlers">The handler list; only entries implementing <see cref="IAssetEventHandler{T}"/> are subscribed.</param>
         public static void SubscribeToEvent<T>(this ContractWeb3ServiceBase service, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
         {
             eventHandlers.Get<T>().ForEach(handler => service.SubscribeToEvent<T>(handler.HandleEvent));
         }
-        
+
+        /// <summary>
+        /// Unsubscribes all <see cref="IAssetEventHandler{T}"/> entries in <paramref name="eventHandlers"/>
+        /// from events of type <typeparamref name="T"/> emitted by <paramref name="service"/>'s contract.
+        /// </summary>
+        /// <typeparam name="T">The event DTO type to unsubscribe from.</typeparam>
+        /// <param name="service">The contract service whose events to stop listening on.</param>
+        /// <param name="eventHandlers">The handler list; only entries implementing <see cref="IAssetEventHandler{T}"/> are unsubscribed.</param>
         public static void UnsubscribeToEvent<T>(this ContractWeb3ServiceBase service, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
         {
             eventHandlers.Get<T>().ForEach(handler => service.UnsubscribeToEvent<T>(handler.HandleEvent));
         }
-        
+
+        /// <summary>
+        /// Dispatches <paramref name="event"/> to all <see cref="IAssetEventHandler{T}"/> entries
+        /// in the untyped <paramref name="eventHandlers"/> list.
+        /// </summary>
+        /// <typeparam name="T">The event DTO type being dispatched.</typeparam>
+        /// <param name="eventHandlers">The untyped handler list; non-matching entries are ignored.</param>
+        /// <param name="event">The event instance to dispatch.</param>
         public static void HandleEvents<T>(this List<IAssetEventHandler> eventHandlers, T @event) where T : IEventDTO, new()
         {
             HandleEvents(eventHandlers.Get<T>(), @event);
         }
-        
+
+        /// <summary>
+        /// Dispatches <paramref name="event"/> to every handler in the typed
+        /// <paramref name="eventHandlers"/> list.
+        /// </summary>
+        /// <typeparam name="T">The event DTO type being dispatched.</typeparam>
+        /// <param name="eventHandlers">The typed handler list.</param>
+        /// <param name="event">The event instance to dispatch.</param>
         public static void HandleEvents<T>(this List<IAssetEventHandler<T>> eventHandlers, T @event) where T : IEventDTO, new()
         {
             eventHandlers.ForEach(handler => handler.HandleEvent(@event));
         }
-        
+
+        /// <summary>
+        /// Decodes all events of type <typeparamref name="T"/> from <paramref name="receipt"/> and
+        /// dispatches each decoded event to the typed <paramref name="eventHandlers"/> list.
+        /// </summary>
+        /// <typeparam name="T">The event DTO type to decode and dispatch.</typeparam>
+        /// <param name="receipt">The transaction receipt whose logs are decoded.</param>
+        /// <param name="eventHandlers">The typed handler list that receives each decoded event.</param>
         public static void DecodeAndHandleEvents<T>(this TransactionReceipt receipt, List<IAssetEventHandler<T>> eventHandlers) where T : IEventDTO, new()
         {
             receipt.DecodeAllEvents<T>().ForEach(log => eventHandlers.HandleEvents(log.Event));
         }
-        
+
+        /// <summary>
+        /// Decodes all events of type <typeparamref name="T"/> from <paramref name="receipt"/> and
+        /// dispatches each to the matching <see cref="IAssetEventHandler{T}"/> entries in the
+        /// untyped <paramref name="eventHandlers"/> list.
+        /// </summary>
+        /// <typeparam name="T">The event DTO type to decode and dispatch.</typeparam>
+        /// <param name="receipt">The transaction receipt whose logs are decoded.</param>
+        /// <param name="eventHandlers">The untyped handler list; non-matching entries are ignored.</param>
         public static void DecodeAndHandleEvents<T>(this TransactionReceipt receipt, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
         {
             DecodeAndHandleEvents(receipt, eventHandlers.Get<T>());
         }
-        
+
+        /// <summary>
+        /// Returns <c>10^<paramref name="exponent"/></c> as a <see cref="decimal"/>.
+        /// </summary>
+        /// <param name="exponent">The power of ten to compute.</param>
+        /// <returns><c>10^<paramref name="exponent"/></c> as a <see cref="decimal"/>.</returns>
         public static decimal PowerOfTen(this BigInteger exponent)
         {
             decimal result = 1m;
