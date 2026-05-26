@@ -37,7 +37,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         private readonly HashSet<string> _hashes = new HashSet<string>();
 
         private readonly Dictionary<Delegate, Func<UniTask>> _subscriptions = new Dictionary<Delegate, Func<UniTask>>();
-        
+
         private void OnEnable()
         {
             UpdateLoopAsync(this.GetCancellationTokenOnDestroy()).Forget();
@@ -98,7 +98,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         private async UniTaskVoid UpdateLoopAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            while (OpenCreatorRailsService.Instance.Connected && !cancellationToken.IsCancellationRequested)
             {
                 _time += Time.deltaTime;
 

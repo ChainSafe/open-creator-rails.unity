@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Samples/Open Creator Rails Unity/0.1.0/Open Creator Rails Sample/Scenes/Loading.unity
+    guid: f36b98444c96c931bb75e978d919c310
+  - enabled: 1
     path: Assets/Samples/Open Creator Rails Unity/0.1.0/Open Creator Rails Sample/Scenes/Demo.unity
     guid: fe1c4a3cfce6c92ab90408718de93789
   m_configObjects:

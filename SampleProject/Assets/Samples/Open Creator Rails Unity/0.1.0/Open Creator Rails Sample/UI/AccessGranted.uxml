@@ -1,0 +1,48 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Samples/Open%20Creator%20Rails%20Unity/0.1.0/Open%20Creator%20Rails%20Sample/UI/Styles.uss?fileID=7433441132597879392&amp;guid=13347270707df7b9e890b1552844e38c&amp;type=3#Styles"/>
+    <ui:VisualElement data-source-path="" data-source-type="Io.ChainSafe.OpenCreatorRails.Samples.AccessGrantedModel, Assembly-CSharp" style="flex-grow: 1; position: absolute; top: 20%; bottom: 20%; height: 60%; width: 40%; align-self: center; align-content: center; align-items: center; justify-content: center; background-color: rgb(255, 255, 255); border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-bottom-left-radius: 15px; margin-top: 0; padding-top: 10px; padding-bottom: 10px;">
+        <ui:VisualElement name="VisualElement" style="flex-grow: 0; aspect-ratio: 1; border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-color: rgb(30, 27, 75); top: 1%; padding-top: 0; padding-bottom: 0; width: auto; left: auto; right: auto; height: 20%; position: relative; bottom: 80%;">
+            <ui:VisualElement style="flex-grow: 1; position: absolute; top: 25%; bottom: 25%; left: 25%; right: 25%; background-color: rgb(255, 255, 255); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px;">
+                <ui:Image source="project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=7433338533053954386&amp;guid=2da9829c311e5f08e97a397d1d77526d&amp;type=3#check@2x" tint-color="rgb(30, 27, 75)" style="flex-grow: 1;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label text="Access Granted" style="-unity-font-style: bold; font-size: 24px;"/>
+        <ui:Label text="Your membership is now active. You have been granted full access!" style="font-size: 10px; white-space: normal; -unity-text-align: upper-center; padding-right: 10px; padding-left: 10px; margin-top: 0; padding-top: 0; height: 25%;"/>
+        <ui:Label text="&lt;uppercase&gt;Time Remaining Until Expiry&lt;/uppercase&gt;" name="Label" style="font-size: 10px; -unity-font-style: bold; margin-bottom: 0; padding-bottom: 0; -unity-text-align: lower-center;"/>
+        <ui:VisualElement style="flex-grow: 0; flex-direction: row; align-items: stretch; align-content: auto; align-self: stretch; padding-left: 10px; padding-right: 10px; height: 25%;">
+            <ui:VisualElement style="flex-grow: 1; flex-wrap: nowrap;">
+                <ui:Label text="00" style="-unity-font-style: bold; justify-content: center; align-self: center; align-content: center; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; font-size: 32px; flex-grow: 1; -unity-text-align: lower-left;">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="Years" binding-mode="ToTarget"/>
+                    </Bindings>
+                </ui:Label>
+                <ui:Label text="&lt;uppercase&gt;year&lt;/uppercase&gt;" style="flex-grow: 1; font-size: 10px; -unity-text-align: upper-center; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1;">
+                <ui:Label text="00" style="-unity-font-style: bold; justify-content: center; align-self: center; align-content: center; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; font-size: 32px; flex-grow: 1; -unity-text-align: lower-left;">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="Months" binding-mode="ToTarget"/>
+                    </Bindings>
+                </ui:Label>
+                <ui:Label text="&lt;uppercase&gt;month&lt;/uppercase&gt;" style="flex-grow: 1; font-size: 10px; -unity-text-align: upper-center; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1;">
+                <ui:Label text="00" style="-unity-font-style: bold; justify-content: center; align-self: center; align-content: center; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; font-size: 32px; flex-grow: 1; -unity-text-align: lower-left;">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="Days" binding-mode="ToTarget"/>
+                    </Bindings>
+                </ui:Label>
+                <ui:Label text="&lt;uppercase&gt;Day&lt;/uppercase&gt;" style="flex-grow: 1; font-size: 10px; -unity-text-align: upper-center; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1;">
+                <ui:Label text="00" style="-unity-font-style: bold; justify-content: center; align-self: center; align-content: center; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; font-size: 32px; flex-grow: 1; -unity-text-align: lower-left;">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="Hours" binding-mode="ToTarget"/>
+                    </Bindings>
+                </ui:Label>
+                <ui:Label text="&lt;uppercase&gt;Hour&lt;/uppercase&gt;" style="flex-grow: 1; font-size: 10px; -unity-text-align: upper-center; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Button text="x" name="close-button" class="close-button" style="position: absolute; top: auto; bottom: 95%; left: 95%; width: 5%; height: 5%; border-top-left-radius: 25px; border-top-right-radius: 25px; border-bottom-right-radius: 25px; border-bottom-left-radius: 25px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px; aspect-ratio: 1;"/>
+    </ui:VisualElement>
+</ui:UXML>

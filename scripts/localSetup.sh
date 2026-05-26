@@ -25,8 +25,6 @@ source .env.local
 anvil &
 ANVIL_PID=$!
 
-./scripts/seed.sh
-
 source "./scripts/utils.sh"
 
 CHAIN_ID=$(cast chain-id --rpc-url "$RPC_URL")
@@ -34,6 +32,10 @@ CHAIN_ID=$(cast chain-id --rpc-url "$RPC_URL")
 TOKEN_ADDRESS=$(get_token_address)
 
 DEPLOYMENTS_FILE=$(get_deployments_file)
+
+rm -rf "./$(get_deployments_file)"
+
+./scripts/seed.sh
 
 popd >/dev/null || true
 

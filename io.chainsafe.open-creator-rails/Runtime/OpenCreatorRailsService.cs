@@ -17,10 +17,8 @@ namespace Io.ChainSafe.OpenCreatorRails
     /// and <see cref="IEventHandler"/> implementations. The GameObject is marked
     /// <c>DontDestroyOnLoad</c> and only one instance, <see cref="OpenCreatorRailsService.Instance"/>, may exist at a time.
     /// </summary>
-    public class OpenCreatorRailsService : MonoBehaviour
+    public class OpenCreatorRailsService : Singleton<OpenCreatorRailsService>
     {
-        public static OpenCreatorRailsService Instance { get; private set; }
-
         public static ABIEncode ABIEncode { get; private set; } =  new ABIEncode();
 
         /// <summary>
@@ -57,24 +55,28 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// The list of <see cref="IAsset"/> instances configured on this service in the Inspector.
         /// Each asset is populated with on-chain state after <see cref="Connect"/> completes.
         /// </summary>
-        public List<IAsset> Assets => _assets.ConvertAll(asset => (IAsset) asset);
+        public List<IAsset> Assets { get; private set; }
 
-        private async void Awake()
+        /// <summary>
+        /// <c>true</c> once <see cref="OpenCreatorRailsService"/> has initialized.
+        /// </summary>
+        public bool Initialized { get; private set; } = false;
+        
+        protected override async void Awake()
         {
-            if (Instance != null)
-            {
-                Debug.LogError($"There is more than one instance of {nameof(OpenCreatorRailsService)}");
-                
-                return;
-            }
+            base.Awake();
 
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            
+            await Initialize();
+        }
+
+        private async UniTask Initialize()
+        {
             // Assign / Reference
             WalletProvider = GetComponent<IWalletProvider>();
             IndexerProvider = GetComponent<IIndexerProvider>();
             EventHandler = GetComponent<IEventHandler>();
+            
+            Assets = new List<IAsset>(_assets);
             
             // Initialize
             IInitializeHandler[] initializeHandlers = GetComponents<IInitializeHandler>();
@@ -82,8 +84,10 @@ namespace Io.ChainSafe.OpenCreatorRails
             await initializeHandlers.ForEachAsync(handler => handler.InitializeAsync());
             
             await Assets.ForEachAsync(asset => !initializeHandlers.Contains(asset) ? asset.InitializeAsync() : UniTask.CompletedTask);
-        }
 
+            Initialized = true;
+        }
+        
         /// <summary>
         /// Connects the wallet at the given HD Wallet index, then initializes all
         /// <see cref="IWeb3Initialized"/> components and all configured <see cref="Assets"/>.
@@ -100,15 +104,18 @@ namespace Io.ChainSafe.OpenCreatorRails
                 await Disconnect();
             }
             
-            Web3 = await WalletProvider.Connect(index);
+            Web3 web3 = await WalletProvider.Connect(index);
 
-            Web3.Client.OverridingRequestInterceptor = new TransactionInterceptor();
+            web3.Client.OverridingRequestInterceptor = new TransactionInterceptor();
             
             IWeb3Initialized[] connectedHandlers = GetComponents<IWeb3Initialized>();
             
-            await connectedHandlers.ForEachAsync(handler => handler.Connected(Web3));
+            await connectedHandlers.ForEachAsync(handler => handler.Connected(web3));
             
-            await Assets.ForEachAsync(asset => !connectedHandlers.Contains(asset) ? asset.Connected(Web3) : UniTask.CompletedTask);
+            await Assets.ForEachAsync(asset => !connectedHandlers.Contains(asset) ? asset.Connected(web3) : UniTask.CompletedTask);
+
+            // Set Connected to true
+            Web3 = web3;
         }
         
         /// <summary>
@@ -131,9 +138,37 @@ namespace Io.ChainSafe.OpenCreatorRails
             // Disconnect Wallet last
             await WalletProvider.Disconnect();
             
+            // Set Connected to false
             Web3 = null;
         }
 
+        /// <summary>
+        /// Registers a new asset at runtime. If the asset instance or another asset with the same
+        /// <c>AssetId</c> and <c>RegistryAddress</c> is already present, returns <c>false</c>
+        /// without modifying the list. Otherwise, adds the asset and initializes it accordingly.
+        /// </summary>
+        /// <param name="asset">The asset to register.</param>
+        /// <returns><c>true</c> if the asset was added; <c>false</c> if it was already present.</returns>
+        public async UniTask<bool> TryAddAsset(IAsset asset)
+        {
+            if (Assets.Contains(asset) ||
+                Assets.Any(a => a.AssetId == asset.AssetId && a.RegistryAddress == asset.RegistryAddress))
+            {
+                return false;
+            }
+
+            Assets.Add(asset);
+
+            await asset.InitializeAsync();
+            
+            if (Connected)
+            {
+                await asset.Connected(Web3);
+            }
+
+            return true;
+        }
+        
         /// <summary>
         /// Looks up a configured asset by its human-readable ID and optional registry address.
         /// </summary>
@@ -181,7 +216,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             return new AssetRegistryService(Instance.Web3, address.Value);
         }
         
-        private async void OnDestroy()
+        protected override async void OnDestroy()
         {
             if (Instance != this)
             {
@@ -192,6 +227,8 @@ namespace Io.ChainSafe.OpenCreatorRails
             {
                 await Disconnect();
             }
+            
+            base.OnDestroy();
         }
     }
 }

@@ -120,12 +120,12 @@ namespace Tests.Runtime
 
             _assetService.SubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(dto => receivedEvent = dto);
 
-            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(999));
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(99900));
 
             await InvokePollAsync(Handler);
 
             Assert.IsNotNull(receivedEvent, "Delegate must be invoked after the event is emitted and the poll fires.");
-            Assert.AreEqual(new BigInteger(999), receivedEvent.NewSubscriptionPrice,
+            Assert.AreEqual(new BigInteger(99900), receivedEvent.NewSubscriptionPrice,
                 "Delivered event payload must match the value passed to setSubscriptionPrice.");
         }
 
@@ -142,7 +142,7 @@ namespace Tests.Runtime
 
             _assetService.SubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(_ => invokeCount++);
 
-            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(777));
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(77700));
 
             // First poll: event is new — delegate fires, tx hash recorded in _hashes.
             await InvokePollAsync(Handler);
@@ -192,7 +192,7 @@ namespace Tests.Runtime
 
             // Subscribe and confirm delivery works.
             _assetService.SubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(handler);
-            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(111));
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(11100));
             await InvokePollAsync(Handler);
 
             Assert.AreEqual(1, invokeCount, "Delegate must be invoked once after the first emission.");
@@ -200,7 +200,7 @@ namespace Tests.Runtime
             // Unsubscribe — the delegate must no longer receive events.
             _assetService.UnsubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(handler);
 
-            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(222));
+            await _assetService.SetSubscriptionPriceRequestAndWaitForReceiptAsync(new BigInteger(22200));
             await InvokePollAsync(Handler);
 
             Assert.AreEqual(1, invokeCount, "Delegate must not be called after UnsubscribeToEvent.");

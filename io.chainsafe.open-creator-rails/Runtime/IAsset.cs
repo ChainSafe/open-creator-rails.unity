@@ -14,7 +14,7 @@ namespace Io.ChainSafe.OpenCreatorRails
     /// Represents an on-chain asset managed by an <c>AssetRegistry</c> contract.
     /// Exposes the asset's configuration, and all relevant subscriber and owner operations.
     /// </summary>
-    public interface IAsset : IInitializeHandler, IWeb3Initialized, IDisconnectedHandler
+    public interface IAsset : ISubscriptionHandler, IInitializeHandler, IWeb3Initialized, IDisconnectedHandler
     {
         /// <summary>Address of the <c>AssetRegistry</c> contract that deployed this asset.</summary>
         public EthereumAddress RegistryAddress { get; }
@@ -37,6 +37,13 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </summary>
         public BigInteger SubscriptionPrice { get; }
 
+        /// <summary>
+        /// <see cref="SubscriptionPrice"/> expressed in the token's primary unit, computed as
+        /// <c>SubscriptionPrice / 10^TokenDecimals</c>. Convenience wrapper for display purposes.
+        /// Read-only.
+        /// </summary>
+        public decimal SubscriptionPricePrimaryUnit => (decimal)SubscriptionPrice / TokenDecimals.PowerOfTen();
+
         /// <summary>Fixed length of one subscription period. Subscriptions are always whole multiples of this duration.</summary>
         public TimeSpan SubscriptionDuration { get; }
 
@@ -50,6 +57,14 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// The token must implement ERC-2612 (permit).
         /// </summary>
         public EthereumAddress TokenAddress { get; }
+
+        /// <summary>Ticker symbol of the ERC-20 payment token (e.g. <c>"USDC"</c>).</summary>
+        public string TokenSymbol { get; }
+
+        /// <summary>
+        /// Decimal precision of the ERC-20 payment token (e.g. <c>18</c> for most tokens, <c>6</c> for USDC).
+        /// </summary>
+        public BigInteger TokenDecimals { get; }
 
         /// <summary>
         /// Cached list of all known subscription records for this asset,
@@ -72,7 +87,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// normal event-driven update cycle.
         /// </summary>
         UniTask Refresh();
-        
+
         // ── Subscriber operations ──────────────────────────────────────────────
 
         /// <summary>
@@ -198,7 +213,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </param>
         /// <returns>The amount of creator fee claimed, in the token's smallest unit.</returns>
         UniTask<BigInteger> ClaimCreatorFee(string subscriberIdHash);
-        
+
         /// <summary>
         /// Claims all accrued creator fees for a single subscriber, using an explicit subscriber
         /// address to compute the identity hash.
@@ -224,7 +239,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </param>
         /// <returns>The total creator fee claimed across all subscribers, in the token's smallest unit.</returns>
         UniTask<BigInteger> ClaimCreatorFee(string[] subscriberIdHashes);
-        
+
         /// <summary>
         /// Claims accrued creator fees for multiple subscribers in a single transaction, using
         /// explicit subscriber addresses to compute identity hashes.
@@ -263,7 +278,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// <c>keccak256(abi.encode(subscriberId, subscriberAddress))</c>.
         /// </param>
         UniTask RevokeSubscription(string subscriberId, EthereumAddress subscriberAddress);
-        
+
         /// <summary>
         /// Lifts a permanent revocation for a subscriber, allowing them to resubscribe.
         /// <para>
@@ -274,7 +289,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// Subscriber identity hash derived from <c>keccak256(abi.encode(subscriberId, connectedAccount))</c>.
         /// </param>
         UniTask UnrevokeSubscription(string subscriberIdHash);
-        
+
         /// <summary>
         /// Lifts a permanent revocation for a subscriber using an explicit subscriber address to
         /// compute the identity hash.

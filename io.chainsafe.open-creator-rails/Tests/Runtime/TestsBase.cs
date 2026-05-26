@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails;
 using Nethereum.JsonRpc.Client;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 namespace Tests.Runtime
@@ -12,11 +13,23 @@ namespace Tests.Runtime
     public class TestsBase
     {
         private string _snapshotId;
+
+        private Object _instance;
         
         [UnityOneTimeSetUp]
         public IEnumerator OneTimeSetup()
         {
-            yield return SceneManager.LoadSceneAsync(0);
+            string path = "Packages/io.chainsafe.open-creator-rails/Tests/Runtime/TestSuite.prefab";
+
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            
+            var instantiate = Object.InstantiateAsync(prefab);
+
+            yield return instantiate;
+            
+            _instance = instantiate.Result[0];
+            
+            yield return new WaitUntil(() => OpenCreatorRailsService.Instance.Initialized);
         }
         
         [SetUp]
@@ -44,9 +57,12 @@ namespace Tests.Runtime
         [UnityOneTimeTearDown]
         public IEnumerator OneTimeTearDown()
         {
-            // Since OpenCreatorRailsService isn't destroyed on SceneLoad (DontDestroyOnLoad)
-            // we have to destroy it explicitly so the next SceneLoad loads a fresh instance 
-            Object.Destroy(OpenCreatorRailsService.Instance.gameObject);
+            if (OpenCreatorRailsService.Instance.Connected)
+            {
+                yield return OpenCreatorRailsService.Instance.Disconnect();
+            }
+            
+            Object.Destroy(_instance);
             
             yield return null;
         }
