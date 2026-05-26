@@ -1,0 +1,40 @@
+.main-panel
+{
+    background-color: white;
+}
+
+.unity-tab__header {
+    background-color: transparent;
+}
+
+.unity-tab__header:checked > .unity-tab__header-underline
+{
+    background-color: #111827;
+}
+
+.unity-label
+{
+    color: #1E1B4B;
+}
+
+.unity-button
+{
+    border-radius: 5px;
+    border-width: 0;
+    -unity-font-style: bold;
+    color: white;
+    background-color: #1E1B4B;
+    font-size: 12px;
+}
+
+.interact-input
+{
+    background-color: #6366F1;
+}
+
+.close-button
+{
+    border-radius: 5px;
+    border-width: 0;
+    background-color: #6366F1;
+}
