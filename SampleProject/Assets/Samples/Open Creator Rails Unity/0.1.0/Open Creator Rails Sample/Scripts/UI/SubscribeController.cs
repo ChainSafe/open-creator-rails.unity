@@ -9,8 +9,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
     {
         [field: SerializeField] public override VisualTreeAsset VisualTreeAsset { get; protected set; }
 
-        [SerializeField] private AccessAssetInteractable _interactable;
-        
         public override void OnLoad()
         {
             base.OnLoad();
@@ -19,28 +17,25 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
 
             List<Tab> tabs = tabView.Query<Tab>().ToList();
 
+            SubscribeModel model = (SubscribeModel) Root.dataSource;
+            
             for (int i = 0; i < tabs.Count; i++)
             {
                 Tab tab = tabs[i];
 
-                string assetId = AccessAssetInteractable.AssetIds[i];
+                IAsset asset = model.Assets[i];
 
-                if (OpenCreatorRailsService.Instance.TryGetAsset(assetId, out IAsset asset))
+                Button subscribeButton = tab.Q<Button>("subscribe-button");
+
+                subscribeButton.clicked += delegate
                 {
-                    Button subscribeButton = tab.Q<Button>("subscribe-button");
-
-                    subscribeButton.clicked += delegate
+                    UIController.Instance.LoadOverlay(async () =>
                     {
-                        UIController.Instance.LoadOverlay(async () =>
-                        {
-                            DateTime endTime = await asset.Subscribe(Player.Instance.SubscriberId, 1);
+                        DateTime endTime = await asset.Subscribe(Player.Instance.SubscriberId, 1);
 
-                            await _interactable.TryAccess();
-                            
-                            UIController.Instance.LoadWithModel<AccessGrantedController, AccessGrantedModel>(new AccessGrantedModel(endTime));
-                        });
-                    };
-                }
+                        UIController.Instance.LoadWithModel<AccessGrantedController, AccessGrantedModel>(new AccessGrantedModel(endTime));
+                    });
+                };
             }
             
             Button closeButton = Root.Q<Button>("close-button");

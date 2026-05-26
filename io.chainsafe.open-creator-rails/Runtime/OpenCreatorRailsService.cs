@@ -92,15 +92,18 @@ namespace Io.ChainSafe.OpenCreatorRails
                 await Disconnect();
             }
             
-            Web3 = await WalletProvider.Connect(index);
+            Web3 web3 = await WalletProvider.Connect(index);
 
-            Web3.Client.OverridingRequestInterceptor = new TransactionInterceptor();
+            web3.Client.OverridingRequestInterceptor = new TransactionInterceptor();
             
             IWeb3Initialized[] connectedHandlers = GetComponents<IWeb3Initialized>();
             
-            await connectedHandlers.ForEachAsync(handler => handler.Connected(Web3));
+            await connectedHandlers.ForEachAsync(handler => handler.Connected(web3));
             
-            await Assets.ForEachAsync(asset => !connectedHandlers.Contains(asset) ? asset.Connected(Web3) : UniTask.CompletedTask);
+            await Assets.ForEachAsync(asset => !connectedHandlers.Contains(asset) ? asset.Connected(web3) : UniTask.CompletedTask);
+
+            // Set Connected to true
+            Web3 = web3;
         }
         
         /// <summary>
@@ -123,6 +126,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             // Disconnect Wallet last
             await WalletProvider.Disconnect();
             
+            // Set Connected to false
             Web3 = null;
         }
 
@@ -136,6 +140,8 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             Assets.Add(asset);
 
+            await asset.InitializeAsync();
+            
             if (Connected)
             {
                 await asset.Connected(Web3);

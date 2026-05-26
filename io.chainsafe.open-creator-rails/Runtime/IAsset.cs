@@ -14,7 +14,7 @@ namespace Io.ChainSafe.OpenCreatorRails
     /// Represents an on-chain asset managed by an <c>AssetRegistry</c> contract.
     /// Exposes the asset's configuration, and all relevant subscriber and owner operations.
     /// </summary>
-    public interface IAsset : IInitializeHandler, IWeb3Initialized, IDisconnectedHandler
+    public interface IAsset : ISubscriptionHandler, IInitializeHandler, IWeb3Initialized, IDisconnectedHandler
     {
         /// <summary>Address of the <c>AssetRegistry</c> contract that deployed this asset.</summary>
         public EthereumAddress RegistryAddress { get; }

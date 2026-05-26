@@ -10,10 +10,6 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
             OpenCreatorRailsService.Instance.Connected ? DisplayStyle.Flex : DisplayStyle.None;
 
         [CreateProperty]
-        public StyleEnum<DisplayStyle> Disconnected =>
-            OpenCreatorRailsService.Instance.Connected ? DisplayStyle.None : DisplayStyle.Flex;
-
-        [CreateProperty]
         public string ConnectedAddress =>
             OpenCreatorRailsService.Instance.Connected
                 ? OpenCreatorRailsService.Instance.WalletProvider.ConnectedAccount.Value

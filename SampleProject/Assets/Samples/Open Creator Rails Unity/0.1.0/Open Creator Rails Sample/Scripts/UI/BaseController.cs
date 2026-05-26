@@ -12,14 +12,14 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
 
         public virtual void OnLoad()
         {
-            Player.Instance.Pause();
+            Player.Instance?.Pause();
             
             Cursor.lockState = CursorLockMode.None;
         }
 
         public virtual void OnUnload()
         {
-            Player.Instance.Resume();
+            Player.Instance?.Resume();
             
             Cursor.lockState = CursorLockMode.Locked;
         }

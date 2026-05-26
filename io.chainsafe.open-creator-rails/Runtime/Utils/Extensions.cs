@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Cysharp.Threading.Tasks;
 using Nethereum.ABI;
 using Nethereum.ABI.FunctionEncoding.Attributes;
+using Nethereum.Contracts;
 using Nethereum.Hex.HexConvertors.Extensions;
+using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Util;
 using Nethereum.Web3;
 
@@ -111,6 +114,44 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
             return new ABIValue[] { new ("string", subscriberId), new ("address", address.Value) }
                 .GetABIEncoded()
                 .Keccack256();
+        }
+
+        public static List<IAssetEventHandler<T>> Get<T>(this List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
+        {
+            return eventHandlers.OfType<IAssetEventHandler<T>>().ToList();
+        }
+        
+        public static void SubscribeToEvent<T>(this ContractWeb3ServiceBase service, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
+        {
+            eventHandlers.Get<T>().ForEach(handler => service.SubscribeToEvent<T>(handler.HandleEvent));
+        }
+        
+        public static void UnsubscribeToEvent<T>(this ContractWeb3ServiceBase service, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
+        {
+            eventHandlers.Get<T>().ForEach(handler => service.UnsubscribeToEvent<T>(handler.HandleEvent));
+        }
+        
+        public static void HandleEvents<T>(this List<IAssetEventHandler> eventHandlers, T @event) where T : IEventDTO, new()
+        {
+            HandleEvents(eventHandlers.Get<T>(), @event);
+        }
+        
+        public static void HandleEvents<T>(this List<IAssetEventHandler<T>> eventHandlers, T @event) where T : IEventDTO, new()
+        {
+            eventHandlers.ForEach(handler => handler.HandleEvent(@event));
+        }
+        
+        public static void DecodeAndHandleEvents<T>(this TransactionReceipt receipt, List<IAssetEventHandler<T>> eventHandlers) where T : IEventDTO, new()
+        {
+            foreach (EventLog<T> log in receipt.DecodeAllEvents<T>())
+            {
+                eventHandlers.HandleEvents(log.Event);
+            }
+        }
+        
+        public static void DecodeAndHandleEvents<T>(this TransactionReceipt receipt, List<IAssetEventHandler> eventHandlers) where T : IEventDTO, new()
+        {
+            DecodeAndHandleEvents(receipt, eventHandlers.Get<T>());
         }
         
         public static decimal PowerOfTen(this BigInteger exponent)

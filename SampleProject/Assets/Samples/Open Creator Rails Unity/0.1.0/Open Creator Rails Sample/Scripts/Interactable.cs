@@ -22,10 +22,18 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
         {
             Player.Instance.InteractInputAction.performed += InputPerformed;
         }
-        
+
         private void OnDisable()
         {
-            Player.Instance.InteractInputAction.performed -= InputPerformed;
+            if (Player.Instance != null)
+            {
+                Player.Instance.InteractInputAction.performed -= InputPerformed;
+
+                if (_enabled)
+                {
+                    Player.Instance.Interactable = false;
+                }
+            }
         }
 
         private void InputPerformed(InputAction.CallbackContext _)
@@ -50,7 +58,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
                 Interact();
             }
         }
-        
+
         protected abstract void Interact();
 
         private void OnTriggerEnter(Collider other)

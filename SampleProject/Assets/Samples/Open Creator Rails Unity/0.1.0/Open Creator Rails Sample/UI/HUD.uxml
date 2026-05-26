@@ -12,16 +12,6 @@
                     <ui:DataBinding property="style.display" data-source-path="Connected" binding-mode="ToTarget"/>
                 </Bindings>
             </ui:VisualElement>
-            <ui:Button text="Connect" name="connect-button" style="position: absolute; left: auto; width: auto; align-self: flex-end; right: 0; display: flex;">
-                <Bindings>
-                    <ui:DataBinding property="style.display" data-source-path="Disconnected" binding-mode="ToTarget"/>
-                </Bindings>
-            </ui:Button>
-            <ui:Button text="Disconnect" name="disconnect-button" style="right: 0; position: absolute;">
-                <Bindings>
-                    <ui:DataBinding property="style.display" data-source-path="Connected" binding-mode="ToTarget"/>
-                </Bindings>
-            </ui:Button>
         </ui:VisualElement>
         <ui:VisualElement name="VisualElement" style="flex-grow: 1; position: absolute; top: 80%; width: auto; height: 10%; align-self: center; justify-content: center; align-items: center; align-content: center; border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-bottom-left-radius: 15px; background-color: rgb(255, 255, 255); flex-direction: row; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;">
             <ui:Label text="Press" name="Label" style="-unity-text-align: middle-left;"/>

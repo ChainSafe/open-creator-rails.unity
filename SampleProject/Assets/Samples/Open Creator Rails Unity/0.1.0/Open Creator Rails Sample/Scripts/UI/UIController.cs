@@ -22,6 +22,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
             _controllers = GetComponentsInChildren<IController>();
 
             LoadWithModel<HUDController, HUDModel>(new HUDModel(), true);
+            
+            LoadWithModel<LandingController, LandingModel>(new LandingModel());
         }
 
         private T _Load<T>(bool hud = false) where T : IController

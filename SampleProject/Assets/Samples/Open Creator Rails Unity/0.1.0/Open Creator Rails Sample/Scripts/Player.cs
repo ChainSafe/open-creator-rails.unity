@@ -8,6 +8,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
     {
         [field: SerializeField] public string SubscriberId { get; private set; } = "player_subscriber_id";
         
+        [field: SerializeField] public InputAction PauseInputAction { get; private set; }
+        
         [field: SerializeField] public InputAction InteractInputAction { get; private set; }
         
         [field: SerializeField] public InputAction LookInputAction { get; private set; }
@@ -16,13 +18,23 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
 
         public bool Interactable { get; set; }
 
+        public bool Paused { get; private set; }
+
         private void OnEnable()
         {
             Enable();
+            
+            PauseInputAction.performed += PausePerformed;
+        }
+
+        private void PausePerformed(InputAction.CallbackContext _)
+        {
+            UIController.Instance.LoadWithModel<LandingController, LandingModel>(new LandingModel());
         }
 
         private void Enable()
         {
+            PauseInputAction.Enable();
             InteractInputAction.Enable();
             LookInputAction.Enable();
             MovementInputAction.Enable();
@@ -30,6 +42,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
         
         private void Disable()
         {
+            PauseInputAction.Disable();
             InteractInputAction.Disable();
             LookInputAction.Disable();
             MovementInputAction.Disable();
@@ -37,6 +50,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
         
         private void OnDisable()
         {
+            PauseInputAction.performed -= PausePerformed;
+            
             Disable();
         }
 
@@ -45,6 +60,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
             Time.timeScale = 0;
             
             Disable();
+
+            Paused = true;
         }
         
         public void Resume()
@@ -52,6 +69,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
             Time.timeScale = 1;
             
             Enable();
+            
+            Paused = false;
         }
     }
 }

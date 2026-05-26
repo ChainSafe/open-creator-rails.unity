@@ -63,6 +63,8 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         public AssetRegistryService AssetRegistryService { get; private set; }
 
+        private List<IAssetEventHandler> _assetEventHandlers;
+        
         private Eip712DomainOutputDTO _domain;
 
         private TypedData<Domain> _typedData;
@@ -70,6 +72,8 @@ namespace Io.ChainSafe.OpenCreatorRails
         public async UniTask InitializeAsync()
         {
             await Refresh();
+
+            _assetEventHandlers = GetComponents<IAssetEventHandler>().ToList();
         }
         
         public async UniTask Connected(Web3 web3)
@@ -125,28 +129,28 @@ namespace Io.ChainSafe.OpenCreatorRails
 
         private void SubscribeToEvents()
         {
-            Service.SubscribeToEvent<SubscriptionAddedEventDTO>(SubscriptionAdded);
-            Service.SubscribeToEvent<SubscriptionRenewedEventDTO>(SubscriptionRenewed);
-            Service.SubscribeToEvent<SubscriptionExtendedEventDTO>(SubscriptionExtended);
-            Service.SubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(SubscriptionPriceUpdated);
-            Service.SubscribeToEvent<SubscriptionCancelledEventDTO>(SubscriptionCancelled);
-            Service.SubscribeToEvent<SubscriptionRevokedEventDTO>(SubscriptionRevoked);
-            Service.SubscribeToEvent<SubscriptionUnrevokedEventDTO>(SubscriptionUnrevoked);
-            Service.SubscribeToEvent<SubscriptionRemovedEventDTO>(SubscriptionRemoved);
-            Service.SubscribeToEvent<OwnershipTransferredEventDTO>(OwnershipTransferred);
+            Service.SubscribeToEvent<SubscriptionAddedEventDTO>(_assetEventHandlers);
+            Service.SubscribeToEvent<SubscriptionRenewedEventDTO>(_assetEventHandlers);
+            Service.SubscribeToEvent<SubscriptionExtendedEventDTO>(_assetEventHandlers);
+            Service.SubscribeToEvent<SubscriptionRemovedEventDTO>(_assetEventHandlers);
+            Service.SubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(_assetEventHandlers);
+            Service.SubscribeToEvent<SubscriptionCancelledEventDTO>(_assetEventHandlers);
+            Service.SubscribeToEvent<SubscriptionRevokedEventDTO>(_assetEventHandlers);
+            Service.SubscribeToEvent<SubscriptionUnrevokedEventDTO>(_assetEventHandlers);
+            Service.SubscribeToEvent<OwnershipTransferredEventDTO>(_assetEventHandlers);
         }
         
         private void UnubscribeToEvents()
         {
-            Service.UnsubscribeToEvent<SubscriptionAddedEventDTO>(SubscriptionAdded);
-            Service.UnsubscribeToEvent<SubscriptionRenewedEventDTO>(SubscriptionRenewed);
-            Service.UnsubscribeToEvent<SubscriptionExtendedEventDTO>(SubscriptionExtended);
-            Service.UnsubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(SubscriptionPriceUpdated);
-            Service.UnsubscribeToEvent<SubscriptionCancelledEventDTO>(SubscriptionCancelled);
-            Service.UnsubscribeToEvent<SubscriptionRevokedEventDTO>(SubscriptionRevoked);
-            Service.UnsubscribeToEvent<SubscriptionUnrevokedEventDTO>(SubscriptionUnrevoked);
-            Service.UnsubscribeToEvent<SubscriptionRemovedEventDTO>(SubscriptionRemoved);
-            Service.UnsubscribeToEvent<OwnershipTransferredEventDTO>(OwnershipTransferred);
+            Service.UnsubscribeToEvent<SubscriptionAddedEventDTO>(_assetEventHandlers);
+            Service.UnsubscribeToEvent<SubscriptionRenewedEventDTO>(_assetEventHandlers);
+            Service.UnsubscribeToEvent<SubscriptionExtendedEventDTO>(_assetEventHandlers);
+            Service.UnsubscribeToEvent<SubscriptionRemovedEventDTO>(_assetEventHandlers);
+            Service.UnsubscribeToEvent<SubscriptionPriceUpdatedEventDTO>(_assetEventHandlers);
+            Service.UnsubscribeToEvent<SubscriptionCancelledEventDTO>(_assetEventHandlers);
+            Service.UnsubscribeToEvent<SubscriptionRevokedEventDTO>(_assetEventHandlers);
+            Service.UnsubscribeToEvent<SubscriptionUnrevokedEventDTO>(_assetEventHandlers);
+            Service.UnsubscribeToEvent<OwnershipTransferredEventDTO>(_assetEventHandlers);
         }
 
         private void AssertOwner()
@@ -215,13 +219,13 @@ namespace Io.ChainSafe.OpenCreatorRails
             switch (@event)
             {
                 case SubscriptionExtendedEventDTO subscriptionExtendedEventDto:
-                    SubscriptionExtended(subscriptionExtendedEventDto);
+                    _assetEventHandlers.HandleEvents(subscriptionExtendedEventDto);
                     return subscriptionExtendedEventDto.EndTime.FromUnixTimeToLocalDateTime();
                 case SubscriptionRenewedEventDTO subscriptionRenewedEventDto:
-                    SubscriptionRenewed(subscriptionRenewedEventDto);
+                    _assetEventHandlers.HandleEvents(subscriptionRenewedEventDto);
                     return subscriptionRenewedEventDto.EndTime.FromUnixTimeToLocalDateTime();
                 case SubscriptionAddedEventDTO subscriptionAddedEventDto:
-                    SubscriptionAdded(subscriptionAddedEventDto);
+                    _assetEventHandlers.HandleEvents(subscriptionAddedEventDto);
                     return subscriptionAddedEventDto.EndTime.FromUnixTimeToLocalDateTime();
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -271,9 +275,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             if (!SubscriptionRemoved(receipt))
             {
-                SubscriptionCancelledEventDTO @event = receipt.DecodeAllEvents<SubscriptionCancelledEventDTO>()[0].Event;
-                
-                SubscriptionCancelled(@event);
+                receipt.DecodeAndHandleEvents<SubscriptionCancelledEventDTO>(_assetEventHandlers);
             }
         }
         
@@ -283,9 +285,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             
             var receipt = await Service.SetSubscriptionPriceRequestAndWaitForReceiptAsync(newSubscriptionPrice);
 
-            SubscriptionPriceUpdatedEventDTO @event = receipt.DecodeAllEvents<SubscriptionPriceUpdatedEventDTO>()[0].Event;
-
-            SubscriptionPriceUpdated(@event);
+            receipt.DecodeAndHandleEvents<SubscriptionPriceUpdatedEventDTO>(_assetEventHandlers);
         }
 
         private async UniTask<BigInteger> ClaimCreatorFee(byte[] subscriberIdHash)
@@ -293,11 +293,12 @@ namespace Io.ChainSafe.OpenCreatorRails
             AssertOwner();
 
             var receipt = await Service.ClaimCreatorFeeRequestAndWaitForReceiptAsync(subscriberIdHash);
-            
-            BigInteger amount =
-                receipt.DecodeAllEvents<CreatorFeeClaimedEventDTO>()[0].Event.Amount;
 
-            return amount;
+            var @event = receipt.DecodeAllEvents<CreatorFeeClaimedEventDTO>()[0].Event;
+            
+            _assetEventHandlers.HandleEvents(@event);
+            
+            return @event.Amount;
         }
         
         public UniTask<BigInteger> ClaimCreatorFee(string subscriberIdHash)
@@ -320,10 +321,11 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             var receipt = await Service.ClaimCreatorFeeRequestAndWaitForReceiptAsync(subscriberIdHashes);
             
-            BigInteger amount =
-                receipt.DecodeAllEvents<CreatorFeeClaimedBatchEvent>()[0].Event.TotalAmount;
+            var @event = receipt.DecodeAllEvents<CreatorFeeClaimedBatchEvent>()[0].Event;
 
-            return amount;
+            _assetEventHandlers.HandleEvents(@event);
+            
+            return @event.TotalAmount;
         }
         
         public UniTask<BigInteger> ClaimCreatorFee(string[] subscriberIdHashes)
@@ -351,9 +353,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             if (!SubscriptionRemoved(receipt))
             {
-                SubscriptionRevokedEventDTO @event = receipt.DecodeAllEvents<SubscriptionRevokedEventDTO>()[0].Event;
-            
-                SubscriptionRevoked(@event);
+                receipt.DecodeAndHandleEvents<SubscriptionRevokedEventDTO>(_assetEventHandlers);
             }
         }
         
@@ -377,9 +377,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             
             var receipt = await Service.UnrevokeSubscriptionRequestAndWaitForReceiptAsync(subscriberIdHash);
             
-            SubscriptionUnrevokedEventDTO @event = receipt.DecodeAllEvents<SubscriptionUnrevokedEventDTO>()[0].Event;
-            
-            SubscriptionUnrevoked(@event);
+            receipt.DecodeAndHandleEvents<SubscriptionUnrevokedEventDTO>(_assetEventHandlers);
         }
         
         public UniTask UnrevokeSubscription(string subscriberIdHash)
@@ -402,7 +400,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 
             if (@event != null)
             {
-                SubscriptionRemoved(@event);
+                _assetEventHandlers.HandleEvents(@event);
                 
                 return true;
             }
@@ -412,7 +410,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         
         #region Event Delegates
 
-        private void SubscriptionAdded(SubscriptionAddedEventDTO @event)
+        public void SubscriptionAdded(SubscriptionAddedEventDTO @event)
         {
             string subscriberIdHash = @event.Subscriber.ToHex(true);
             DateTime startTime = @event.StartTime.FromUnixTimeToLocalDateTime();
@@ -428,7 +426,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
         
-        private void SubscriptionRenewed(SubscriptionRenewedEventDTO @event)
+        public void SubscriptionRenewed(SubscriptionRenewedEventDTO @event)
         {
             string subscriberIdHash = @event.Subscriber.ToHex(true);
             BigInteger nonce = @event.Nonce;
@@ -445,7 +443,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
 
-        private void SubscriptionExtended(SubscriptionExtendedEventDTO @event)
+        public void SubscriptionExtended(SubscriptionExtendedEventDTO @event)
         {
             string subscriberIdHash = @event.Subscriber.ToHex(true);
             DateTime endTime = @event.EndTime.FromUnixTimeToLocalDateTime();
@@ -460,7 +458,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
 
-        private void SubscriptionPriceUpdated(SubscriptionPriceUpdatedEventDTO @event)
+        public void SubscriptionPriceUpdated(SubscriptionPriceUpdatedEventDTO @event)
         {
             BigInteger newSubscriptionPrice = @event.NewSubscriptionPrice;
             
@@ -470,7 +468,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
 
-        private void SubscriptionCancelled(SubscriptionCancelledEventDTO @event)
+        public void SubscriptionCancelled(SubscriptionCancelledEventDTO @event)
         {
             string subscriberIdHash = @event.Subscriber.ToHex(true);
 
@@ -479,7 +477,7 @@ namespace Io.ChainSafe.OpenCreatorRails
             SubscriptionCancelledOrRevoked(subscriberIdHash, @event.Nonce, endTime);
         }
 
-        private void SubscriptionRevoked(SubscriptionRevokedEventDTO @event)
+        public void SubscriptionRevoked(SubscriptionRevokedEventDTO @event)
         {
             string subscriberIdHash = @event.Subscriber.ToHex(true);
 
@@ -496,14 +494,14 @@ namespace Io.ChainSafe.OpenCreatorRails
             }
         }
         
-        private void SubscriptionRemoved(SubscriptionRemovedEventDTO @event)
+        public void SubscriptionRemoved(SubscriptionRemovedEventDTO @event)
         {
             string subscriberIdHash = @event.Subscriber.ToHex(true);
 
             Subscriptions.RemoveAll(subscription => subscription.SubscriberIdHash == subscriberIdHash);
         }
 
-        private void SubscriptionUnrevoked(SubscriptionUnrevokedEventDTO @event)
+        public void SubscriptionUnrevoked(SubscriptionUnrevokedEventDTO @event)
         {
             string subscriberIdHash = @event.Subscriber.ToHex(true);
 
