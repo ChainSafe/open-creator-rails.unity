@@ -2,7 +2,7 @@
     <Style src="project://database/Assets/Samples/Open%20Creator%20Rails%20Unity/0.1.0/Open%20Creator%20Rails%20Sample/UI/Styles.uss?fileID=7433441132597879392&amp;guid=13347270707df7b9e890b1552844e38c&amp;type=3#Styles"/>
     <ui:VisualElement style="flex-grow: 1; background-color: rgba(17, 24, 39, 0.39);">
         <ui:VisualElement style="flex-grow: 0; align-self: center; align-items: stretch; justify-content: center; width: 10%; height: 10%; position: absolute; top: 40%; bottom: 40%; aspect-ratio: 1;">
-            <Io.ChainSafe.OpenCreatorRails.Samples.LoadingSpinner width="3" color="rgb(255, 255, 255)" style="width: auto; height: auto; position: relative; align-self: center; align-content: auto; align-items: center; justify-content: center; aspect-ratio: 1; flex-grow: 1; flex-direction: column; flex-wrap: nowrap; top: auto; bottom: auto; left: auto; right: auto;"/>
+            <Io.ChainSafe.OpenCreatorRails.Samples.LoadingSpinner width="8" color="rgb(255, 255, 255)" style="width: auto; height: auto; position: relative; align-self: center; align-content: auto; align-items: center; justify-content: center; aspect-ratio: 1; flex-grow: 1; flex-direction: column; flex-wrap: nowrap; top: auto; bottom: auto; left: auto; right: auto;"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

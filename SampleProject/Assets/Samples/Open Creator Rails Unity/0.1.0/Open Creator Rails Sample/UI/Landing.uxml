@@ -2,17 +2,17 @@
     <Style src="project://database/Assets/Samples/Open%20Creator%20Rails%20Unity/0.1.0/Open%20Creator%20Rails%20Sample/UI/Styles.uss?fileID=7433441132597879392&amp;guid=13347270707df7b9e890b1552844e38c&amp;type=3#Styles"/>
     <ui:VisualElement data-source-type="Io.ChainSafe.OpenCreatorRails.Samples.LandingModel, Assembly-CSharp" style="flex-grow: 1; background-color: rgb(255, 255, 255);">
         <ui:VisualElement data-source-type="Io.ChainSafe.OpenCreatorRails.Samples.LandingModel, Assembly-CSharp" style="flex-grow: 1; align-self: center; justify-content: center;">
-            <ui:Button text="Connect" name="connect-button">
+            <ui:Button text="Connect" name="connect-button" style="font-size: 32px; padding-top: 20px; padding-right: 20px; padding-bottom: 20px; padding-left: 20px; border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-bottom-left-radius: 15px;">
                 <Bindings>
                     <ui:DataBinding property="style.display" data-source-path="Disconnected" binding-mode="ToTarget"/>
                 </Bindings>
             </ui:Button>
-            <ui:Button text="Disconnect" name="disconnect-button">
+            <ui:Button text="Disconnect" name="disconnect-button" style="font-size: 32px; padding-top: 20px; padding-right: 20px; padding-bottom: 20px; padding-left: 20px; border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-bottom-left-radius: 15px;">
                 <Bindings>
                     <ui:DataBinding property="style.display" data-source-path="Connected" binding-mode="ToTarget"/>
                 </Bindings>
             </ui:Button>
-            <ui:Button text="Resume" name="resume-button">
+            <ui:Button text="Resume" name="resume-button" style="font-size: 32px; padding-top: 20px; padding-right: 20px; padding-bottom: 20px; padding-left: 20px; border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-bottom-left-radius: 15px;">
                 <Bindings>
                     <ui:DataBinding property="style.display" data-source-path="Paused" binding-mode="ToTarget"/>
                 </Bindings>
