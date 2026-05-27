@@ -101,5 +101,5 @@ InitTestScene*.unity*
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
 # Secrets file
-secrets.json
-secrets.json.meta
+/[Aa]ssets/StreamingAssets/secrets.json
+/[Aa]ssets/StreamingAssets/secrets.json.meta

@@ -7,7 +7,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
 {
     public static class Secrets
     {
-        private static readonly string FilePath = Path.Combine(Application.dataPath, "secrets.json");
+        private static readonly string FilePath = Path.Combine(Application.streamingAssetsPath, "secrets.json");
         
         /// <summary>
         /// Reads and deserializes a value by key from the secrets file in <see cref="FilePath"/>.

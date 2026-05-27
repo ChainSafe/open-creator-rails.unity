@@ -25,17 +25,19 @@ source .env.local
 anvil &
 ANVIL_PID=$!
 
-source "./scripts/utils.sh"
+until nc -z -w 1 127.0.0.1 8545; do :; done
+
+source ./scripts/utils.sh
+
+echo "[]" > "./$(get_deployments_file)"
+
+./scripts/seed.sh
 
 CHAIN_ID=$(cast chain-id --rpc-url "$RPC_URL")
 
 TOKEN_ADDRESS=$(get_token_address)
 
 DEPLOYMENTS_FILE=$(get_deployments_file)
-
-rm -rf "./$(get_deployments_file)"
-
-./scripts/seed.sh
 
 popd >/dev/null || true
 
