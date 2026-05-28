@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Io.ChainSafe.OpenCreatorRails.Utils;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -27,11 +28,25 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
 
                 Button subscribeButton = tab.Q<Button>("subscribe-button");
 
+                int index = i;
+                
                 subscribeButton.clicked += delegate
                 {
                     UIController.Instance.LoadOverlay(async () =>
                     {
-                        DateTime endTime = await asset.Subscribe(Player.Instance.SubscriberId, 1);
+                        DateTime endTime;
+
+                        switch (index)
+                        {
+                            case 0:
+                                endTime = await asset.SubscribeMonthly(Player.Instance.SubscriberId);
+                                break;
+                            case 1:
+                                endTime = await asset.SubscribeAnnually(Player.Instance.SubscriberId);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
 
                         UIController.Instance.LoadWithModel<AccessGrantedController, AccessGrantedModel>(new AccessGrantedModel(endTime));
                     });
