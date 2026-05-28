@@ -52,7 +52,7 @@ Add the following components to the **same GameObject** as `OpenCreatorRailsServ
 | `EmbeddedWalletProvider` | `Chain Id` | Or implement `IWalletProvider` |
 | `PollingEventHandler` | *(none)* | Or implement `IEventHandler` |
 
-> `EmbeddedWalletProvider` reads wallet credentials from `Assets/secrets.json`. Create that file with:
+> `EmbeddedWalletProvider` reads wallet credentials from `Assets/StreamingAssets/secrets.json`. Create that file with:
 > 
 > ```json
 > {
@@ -89,7 +89,7 @@ using Io.ChainSafe.OpenCreatorRails;
 using Cysharp.Threading.Tasks;
 
 // Connect the default account (index 0).
-// EmbeddedWalletProvider reads credentials from Assets/secrets.json.
+// EmbeddedWalletProvider reads credentials from Assets/StreamingAssets/secrets.json.
 await OpenCreatorRailsService.Instance.Connect();
 
 // Connect a different HD account (e.g. account at derivation index 2)
