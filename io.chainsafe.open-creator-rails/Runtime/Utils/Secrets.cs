@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Io.ChainSafe.OpenCreatorRails.Utils
 {
@@ -21,15 +23,24 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         /// <exception cref="System.Collections.Generic.KeyNotFoundException">
         /// Thrown if <paramref name="key"/> is not present in the JSON file.
         /// </exception>
-        public static T Get<T>(string key)
+        public static async UniTask<T> Get<T>(string key)
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            using var request = UnityWebRequest.Get(FilePath);
+            
+            await request.SendWebRequest();
+
+            string text = request.result == UnityWebRequest.Result.Success
+                ? request.downloadHandler.text
+                : throw new UnityWebRequestException(request);
+#else
             if (!File.Exists(FilePath))
             {
                 throw new FileNotFoundException("File not found", FilePath);
             }
-
-            string text = File.ReadAllText(FilePath);
-
+            
+            string text = await File.ReadAllTextAsync(FilePath);
+#endif
             JObject json = JObject.Parse(text);
 
             if (!json.TryGetValue(key, out JToken value))
