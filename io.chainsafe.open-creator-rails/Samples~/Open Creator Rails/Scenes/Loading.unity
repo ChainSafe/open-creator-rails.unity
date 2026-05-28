@@ -349,7 +349,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd76cd16673940718cb2ba938d239061, type: 3}
   m_Name: 
   m_EditorClassIdentifier: io.chainsafe.open-creator-rails::Io.ChainSafe.OpenCreatorRails.OpenCreatorRailsService
-  _dontDestroyOnLoad: 1
+  _dontDestroyOnLoad: 0
   _assets: []
 --- !u!114 &462771278
 MonoBehaviour:
