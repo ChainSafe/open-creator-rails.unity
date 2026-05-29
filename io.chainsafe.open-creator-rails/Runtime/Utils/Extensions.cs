@@ -95,12 +95,24 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         /// <param name="collection">The collection to iterate.</param>
         /// <param name="action">The async action to invoke for each element.</param>
         /// <returns>A <see cref="UniTask"/> that completes when all invocations have finished.</returns>
+#if !UNITY_WEBGL || UNITY_EDITOR
         public static UniTask ForEachAsync<T>(
             this IEnumerable<T> collection,
             Func<T, UniTask> action)
         {
             return UniTask.WhenAll(collection.Select(action));
         }
+#else
+        public static async UniTask ForEachAsync<T>(
+            this IEnumerable<T> collection,
+            Func<T, UniTask> action)
+        {
+            foreach (T item in collection)
+            {
+                await action(item);
+            }
+        }
+#endif
 
         /// <summary>
         /// Computes the on-chain subscriber identity hash for the given subscriber ID and an

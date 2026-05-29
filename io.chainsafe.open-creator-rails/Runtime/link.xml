@@ -1,0 +1,13 @@
+<linker>
+  <!--
+    Preserve the Open Creator Rails runtime assembly. Under IL2CPP
+    High managed stripping (the WebGL default) the linker cannot see these as
+    reachable and strips them, causing MethodAccessException at runtime.
+  -->
+  <assembly fullname="io.chainsafe.open-creator-rails.runtime" preserve="all"/>
+
+  <!--
+    Preserve the sample code for the same reason.
+  -->
+  <assembly fullname="Assembly-CSharp" preserve="all"/>
+</linker>

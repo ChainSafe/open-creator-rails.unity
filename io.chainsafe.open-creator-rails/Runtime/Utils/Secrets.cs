@@ -9,7 +9,8 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
 {
     public static class Secrets
     {
-        private static readonly string FilePath = Path.Combine(Application.streamingAssetsPath, "secrets.json");
+        private const string FileName = "secrets.json";
+        private static readonly string FilePath = Path.Combine(Application.streamingAssetsPath, FileName);
         
         /// <summary>
         /// Reads and deserializes a value by key from the secrets file in <see cref="FilePath"/>.
@@ -26,8 +27,10 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         public static async UniTask<T> Get<T>(string key)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
-            using var request = UnityWebRequest.Get(FilePath);
-            
+            string url = $"{Application.streamingAssetsPath}/{FileName}";
+
+            using var request = UnityWebRequest.Get(url);
+
             await request.SendWebRequest();
 
             string text = request.result == UnityWebRequest.Result.Success

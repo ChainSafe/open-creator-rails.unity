@@ -44,6 +44,8 @@ namespace Io.ChainSafe.OpenCreatorRails
         public EthereumAddress Address { get; private set; }
 
         public BigInteger SubscriptionPrice { get; private set; }
+        
+        public decimal SubscriptionPricePrimaryUnit => (decimal)SubscriptionPrice / TokenDecimals.PowerOfTen();
 
         public TimeSpan SubscriptionDuration { get; private set; }
 
