@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using System.IO;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Io.ChainSafe.OpenCreatorRails.Utils
 {
     public static class Secrets
     {
-        private static readonly string FilePath = Path.Combine(Application.streamingAssetsPath, "secrets.json");
+        private const string FileName = "secrets.json";
+        private static readonly string FilePath = Path.Combine(Application.streamingAssetsPath, FileName);
         
         /// <summary>
         /// Reads and deserializes a value by key from the secrets file in <see cref="FilePath"/>.
@@ -21,15 +24,26 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         /// <exception cref="System.Collections.Generic.KeyNotFoundException">
         /// Thrown if <paramref name="key"/> is not present in the JSON file.
         /// </exception>
-        public static T Get<T>(string key)
+        public static async UniTask<T> Get<T>(string key)
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            string url = $"{Application.streamingAssetsPath}/{FileName}";
+
+            using var request = UnityWebRequest.Get(url);
+
+            await request.SendWebRequest();
+
+            string text = request.result == UnityWebRequest.Result.Success
+                ? request.downloadHandler.text
+                : throw new UnityWebRequestException(request);
+#else
             if (!File.Exists(FilePath))
             {
                 throw new FileNotFoundException("File not found", FilePath);
             }
-
-            string text = File.ReadAllText(FilePath);
-
+            
+            string text = await File.ReadAllTextAsync(FilePath);
+#endif
             JObject json = JObject.Parse(text);
 
             if (!json.TryGetValue(key, out JToken value))

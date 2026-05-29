@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails.Utils;
@@ -5,6 +6,7 @@ using Nethereum.ABI.EIP712;
 using Nethereum.HdWallet;
 using Nethereum.Signer;
 using Nethereum.Signer.EIP712;
+using Nethereum.Unity.Rpc;
 using Nethereum.Web3;
 using UnityEngine;
 
@@ -43,15 +45,13 @@ namespace Io.ChainSafe.OpenCreatorRails
         
         private readonly EthereumMessageSigner _messageSigner =  new EthereumMessageSigner();
 
-        public UniTask InitializeAsync()
+        public async UniTask InitializeAsync()
         {
-            string mnemonic = Secrets.Get<string>(MnemonicKey);
+            string mnemonic = await Secrets.Get<string>(MnemonicKey);
             
-            RpcUrl = Secrets.Get<string>(RPCUrlKey);
+            RpcUrl = await Secrets.Get<string>(RPCUrlKey);
             
             Wallet = new Wallet(mnemonic, null);
-            
-            return UniTask.CompletedTask;
         }
         
         public UniTask<Web3> Connect(int index = 0)
@@ -60,7 +60,9 @@ namespace Io.ChainSafe.OpenCreatorRails
             
             var account = Wallet.GetAccount(ConnectedAccountIndex, ChainId);
             
-            var web3 = new Web3(account, RpcUrl);
+            var client = new UnityWebRequestRpcTaskClient(new Uri(RpcUrl));
+            
+            var web3 = new Web3(account, client);
             
             return UniTask.FromResult(web3);
         }

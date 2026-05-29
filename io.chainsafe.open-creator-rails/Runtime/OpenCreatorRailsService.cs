@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -64,19 +65,28 @@ namespace Io.ChainSafe.OpenCreatorRails
         
         protected override async void Awake()
         {
-            base.Awake();
+            try
+            {
+                base.Awake();
 
-            await Initialize();
+                await Initialize();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
 
         private async UniTask Initialize()
         {
+            await UniTask.SwitchToMainThread();
+            
             // Assign / Reference
             WalletProvider = GetComponent<IWalletProvider>();
             IndexerProvider = GetComponent<IIndexerProvider>();
             EventHandler = GetComponent<IEventHandler>();
             
-            Assets = new List<IAsset>(_assets);
+            Assets = new List<IAsset>(_assets.Where(asset => asset != null));
             
             // Initialize
             IInitializeHandler[] initializeHandlers = GetComponents<IInitializeHandler>();
@@ -98,6 +108,10 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </param>
         public async UniTask Connect(int index = 0)
         {
+            await UniTask.WaitUntil(() => Initialized).Timeout(TimeSpan.FromSeconds(10));
+
+            await UniTask.SwitchToMainThread();
+            
             // In case of a reconnect
             if (Connected)
             {
@@ -151,7 +165,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// <returns><c>true</c> if the asset was added; <c>false</c> if it was already present.</returns>
         public async UniTask<bool> TryAddAsset(IAsset asset)
         {
-            if (Assets.Contains(asset) ||
+            if (asset == null || Assets.Contains(asset) ||
                 Assets.Any(a => a.AssetId == asset.AssetId && a.RegistryAddress == asset.RegistryAddress))
             {
                 return false;

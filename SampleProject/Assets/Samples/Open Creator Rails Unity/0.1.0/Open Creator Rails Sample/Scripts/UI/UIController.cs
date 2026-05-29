@@ -83,13 +83,23 @@ namespace Io.ChainSafe.OpenCreatorRails.Samples
 
             _loadingOverlay.CloneTree(_overlay.rootVisualElement);
 
-            action?.Invoke()
-                .ContinueWith(() =>
+            Execute().Forget();
+            
+            async UniTaskVoid Execute()
+            {
+                try
                 {
-                    UniTask.SwitchToMainThread();
-
+                    await action.Invoke();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+                finally
+                {
                     _overlay.rootVisualElement.Clear();
-                });
+                }
+            }
         }
     }
 }

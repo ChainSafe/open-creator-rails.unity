@@ -26,7 +26,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// Keccak-256 hex hash of <see cref="AssetId"/>. This is the <c>bytes32</c> value
         /// used on-chain to identify the asset.
         /// </summary>
-        public string AssetIdHash => AssetId.Keccack256();
+        public string AssetIdHash { get; }
 
         /// <summary>On-chain address of the deployed <c>Asset</c> contract.</summary>
         public EthereumAddress Address { get; }
@@ -42,7 +42,7 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// <c>SubscriptionPrice / 10^TokenDecimals</c>. Convenience wrapper for display purposes.
         /// Read-only.
         /// </summary>
-        public decimal SubscriptionPricePrimaryUnit => (decimal)SubscriptionPrice / TokenDecimals.PowerOfTen();
+        public decimal SubscriptionPricePrimaryUnit { get; }
 
         /// <summary>Fixed length of one subscription period. Subscriptions are always whole multiples of this duration.</summary>
         public TimeSpan SubscriptionDuration { get; }

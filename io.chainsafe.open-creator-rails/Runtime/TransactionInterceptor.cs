@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Nethereum.JsonRpc.Client;
 
 namespace Io.ChainSafe.OpenCreatorRails
@@ -20,6 +21,8 @@ namespace Io.ChainSafe.OpenCreatorRails
         public override async Task<object> InterceptSendRequestAsync<T>(
             Func<RpcRequest, string, Task<T>> interceptedSendRequestAsync, RpcRequest request, string route = null)
         {
+            await UniTask.SwitchToMainThread();
+            
             var result = await interceptedSendRequestAsync(request, route);
 
             if (request.Method == "eth_sendRawTransaction" || request.Method == "eth_sendTransaction")
