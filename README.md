@@ -288,3 +288,31 @@ await asset.UnrevokeSubscription(subscriberIdHash);
 
 Debug.Log("Subscriber unrevoked.");
 ```
+
+---
+
+> ### WebGL Builds
+> 
+> Building for WebGL requires three additional setup steps beyond the standard flow.
+> 
+>> #### 1. CORS — use HTTPS endpoints, not localhost
+>> 
+>> WebGL builds run in the browser, so every RPC and indexer request is subject to the browser's CORS policy and mixed-content rules. Local endpoints will not work:
+>>
+>> - `http://127.0.0.1:8545` (Anvil) and `http://localhost:42069/v2/graphql` Ponder indexers do not return `Access-Control-Allow-Origin` headers and will be blocked.
+>
+>> #### 2. WebGLThreadingPatcher
+>>
+>> Nethereum.Unity uses `System.Threading` / `Task` continuations that hang under WebGL's single-threaded runtime. [WebGLThreadingPatcher](https://github.com/VolodymyrBS/WebGLThreadingPatcher) fixes this by redirecting thread-pool work onto the main loop.
+>>
+>> Install via **Window → Package Manager → + → Add package from git URL**:
+>>
+>> ```
+>> https://github.com/VolodymyrBS/WebGLThreadingPatcher.git
+>> ```
+>
+>> #### 3. Managed stripping level — set to Minimal
+>>
+>> WebGL/IL2CPP defaults to **High** managed code stripping, which removes reflection-reachable code in Nethereum and the SDK and causes `MethodAccessException` errors at runtime. The package includes a `link.xml` that preserves the runtime and sample assemblies, but it does not cover all of Nethereum's reflection surface.
+>>
+>> Set **Edit → Project Settings → Player → WebGL → Other Settings → Managed Stripping Level** to **Minimal**.
