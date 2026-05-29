@@ -26,7 +26,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         /// </exception>
         public static async UniTask<T> Get<T>(string key)
         {
-#if UNITY_WEBGL && !UNITY_EDITOR
+#if (UNITY_WEBGL || UNITY_ANDROID) && !UNITY_EDITOR
             string url = $"{Application.streamingAssetsPath}/{FileName}";
 
             using var request = UnityWebRequest.Get(url);
