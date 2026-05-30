@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
 using Io.ChainSafe.OpenCreatorRails;
 using Nethereum.JsonRpc.Client;
 using NUnit.Framework;

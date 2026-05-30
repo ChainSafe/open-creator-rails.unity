@@ -73,7 +73,7 @@ namespace Io.ChainSafe.OpenCreatorRails.Utils
         /// </summary>
         /// <typeparam name="T">The Nethereum event DTO type to unsubscribe from, implements <see cref="IEventDTO"/>.</typeparam>
         /// <param name="service">The contract service whose address and <see cref="IWeb3"/> instance are used.</param>
-        /// <param name="delegate">The callback to remove; must be the same delegate instance passed to <see cref="SubscribeToEvent{T}"/>.</param>
+        /// <param name="delegate">The callback to remove; must be the same delegate instance passed to <see cref="SubscribeToEvent{T}(ContractWeb3ServiceBase, EventDelegate{T})"/>.</param>
         public static void UnsubscribeToEvent<T>(this ContractWeb3ServiceBase service, EventDelegate<T> @delegate) where T : IEventDTO, new()
         {
             OpenCreatorRailsService.Instance.EventHandler.Unsubscribe(new EthereumAddress(service.ContractAddress), service.Web3, @delegate);

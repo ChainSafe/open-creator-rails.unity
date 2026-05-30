@@ -29,11 +29,10 @@ namespace Tests.Runtime
             var instance = OpenCreatorRailsService.Instance;
             Assert.NotNull(instance);
             
+            LogAssert.Expect(LogType.Exception, new Regex("There is more than one Singleton Instance of"));
             var secondInstance = new GameObject("DoubleInstance").AddComponent<OpenCreatorRailsService>();
 
             yield return null;
-            
-            LogAssert.Expect(LogType.Exception, new Regex("There is more than one Singleton Instance of"));
             
             Assert.AreSame(instance, OpenCreatorRailsService.Instance);
             Assert.AreNotSame(secondInstance, OpenCreatorRailsService.Instance);

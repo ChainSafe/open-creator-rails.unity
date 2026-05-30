@@ -20,6 +20,11 @@ namespace Io.ChainSafe.OpenCreatorRails
     /// </summary>
     public class OpenCreatorRailsService : Singleton<OpenCreatorRailsService>
     {
+        /// <summary>
+        /// <c>true</c> once <see cref="OpenCreatorRailsService"/> has initialized.
+        /// </summary>
+        public bool Initialized { get; private set; } = false;
+        
         public static ABIEncode ABIEncode { get; private set; } =  new ABIEncode();
 
         /// <summary>
@@ -57,11 +62,6 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// Each asset is populated with on-chain state after <see cref="Connect"/> completes.
         /// </summary>
         public List<IAsset> Assets { get; private set; }
-
-        /// <summary>
-        /// <c>true</c> once <see cref="OpenCreatorRailsService"/> has initialized.
-        /// </summary>
-        public bool Initialized { get; private set; } = false;
         
         protected override async void Awake()
         {
@@ -108,28 +108,36 @@ namespace Io.ChainSafe.OpenCreatorRails
         /// </param>
         public async UniTask Connect(int index = 0)
         {
-            await UniTask.WaitUntil(() => Initialized).Timeout(TimeSpan.FromSeconds(10));
-
-            await UniTask.SwitchToMainThread();
-            
-            // In case of a reconnect
-            if (Connected)
+            try
             {
-                await Disconnect();
+                await UniTask.WaitUntil(() => Instance.Initialized).Timeout(TimeSpan.FromSeconds(10));
+
+                await UniTask.SwitchToMainThread();
+
+                // In case of a reconnect
+                if (Connected)
+                {
+                    await Disconnect();
+                }
+
+                Web3 web3 = await WalletProvider.Connect(index);
+
+                web3.Client.OverridingRequestInterceptor = new TransactionInterceptor();
+
+                IWeb3Initialized[] connectedHandlers = GetComponents<IWeb3Initialized>();
+
+                await connectedHandlers.ForEachAsync(handler => handler.Connected(web3));
+
+                await Assets.ForEachAsync(asset =>
+                    !connectedHandlers.Contains(asset) ? asset.Connected(web3) : UniTask.CompletedTask);
+
+                // Set Connected to true
+                Web3 = web3;
             }
-            
-            Web3 web3 = await WalletProvider.Connect(index);
-
-            web3.Client.OverridingRequestInterceptor = new TransactionInterceptor();
-            
-            IWeb3Initialized[] connectedHandlers = GetComponents<IWeb3Initialized>();
-            
-            await connectedHandlers.ForEachAsync(handler => handler.Connected(web3));
-            
-            await Assets.ForEachAsync(asset => !connectedHandlers.Contains(asset) ? asset.Connected(web3) : UniTask.CompletedTask);
-
-            // Set Connected to true
-            Web3 = web3;
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
         
         /// <summary>

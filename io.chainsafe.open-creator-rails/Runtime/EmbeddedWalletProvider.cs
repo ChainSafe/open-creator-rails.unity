@@ -59,11 +59,14 @@ namespace Io.ChainSafe.OpenCreatorRails
             ConnectedAccountIndex  = index;
             
             var account = Wallet.GetAccount(ConnectedAccountIndex, ChainId);
-            
+
+#if UNITY_WEBGL && !UNITY_EDITOR
             var client = new UnityWebRequestRpcTaskClient(new Uri(RpcUrl));
             
             var web3 = new Web3(account, client);
-            
+#else
+            var web3 = new Web3(account, RpcUrl);
+#endif
             return UniTask.FromResult(web3);
         }
 
