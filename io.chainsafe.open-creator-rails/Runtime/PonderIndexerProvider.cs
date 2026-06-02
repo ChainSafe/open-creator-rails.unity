@@ -62,6 +62,7 @@ namespace Io.ChainSafe.OpenCreatorRails
 {{
     assets(
         where: {{
+            chainId: {OpenCreatorRailsService.Instance.WalletProvider.ChainId}
             assetId: ""{assetIdHash}""
             registryAddress: ""{registryAddress}""
         }}
