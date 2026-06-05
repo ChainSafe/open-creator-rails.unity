@@ -22,6 +22,8 @@ pushd "$OPEN_CREATOR_RAILS_ROOT" >/dev/null || exit 1
 
 source .env.local
 
+export SOURCE_SCRIPT=true
+
 anvil &
 ANVIL_PID=$!
 
