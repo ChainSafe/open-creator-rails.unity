@@ -21,7 +21,7 @@ git add io.chainsafe.open-creator-rails/
 
 echo "Please make sure ./SampleProject compiles and all tests pass, run ./scripts/localSetup.sh to run dependencies locally. "
 
-read -n 1 -p "Continue? (y/n): " response </dev/tty
+read -p "Continue? (y/n): " response </dev/tty
 
 if [ $response != "Y" ] && [ $response != "y" ]; then
   exit 1;
