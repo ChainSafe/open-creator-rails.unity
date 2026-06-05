@@ -9,6 +9,10 @@ fi
 
 git pull
 
+# Bump package version to the release version
+jq --arg v "$version" '.version = $v' io.chainsafe.open-creator-rails/package.json > tmp.json \
+  && mv tmp.json io.chainsafe.open-creator-rails/package.json
+
 ./scripts/updateSubmodules.sh $version
 
 ./scripts/duplicateSamples.sh
@@ -29,7 +33,7 @@ git push origin main
 gh release create "$version" \
   --title "$version" \
   --notes "$notes" \
-  deployments/*
+  io.chainsafe.open-creator-rails/package.json
 
 git tag "v$version" HEAD
 git push origin "v$version"

@@ -19,7 +19,7 @@
 	"samples": [
 		{
 			"displayName": "Open Creator Rails Sample",
-			"description": "Contains implementations for Common Operations using Open Creator Rails.",
+			"description": "Contains implementations for Common Operations using [Open Creator Rails](https://github.com/ChainSafe/open-creator-rails).",
 			"path": "Samples~/Open Creator Rails"
 		}
 	]
