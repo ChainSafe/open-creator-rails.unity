@@ -1,26 +1,26 @@
 {
-	"name": "io.chainsafe.open-creator-rails",
-	"displayName":"Open Creator Rails Unity",
-	"version": "0.1.0",
-	"unity": "6000.3",
-	"unityRelease": "8f1",
-	"description": "",
-	"dependencies": {
-		"com.unity.test-framework": "1.6.0",
-		"com.cysharp.unitask": "2.5.10",
-		"com.nethereum.unity": "6.1.0",
-		"com.unity.nuget.newtonsoft-json": "3.2.2"
-	},
-	"author": {
-		"name": "ChainSafe",
-		"url": "https://chainsafe.io/"
-	},
-	"licensesUrl": "https://mit-license.org/",
-	"samples": [
-		{
-			"displayName": "Open Creator Rails Sample",
-			"description": "Contains implementations for Common Operations using [Open Creator Rails](https://github.com/ChainSafe/open-creator-rails).",
-			"path": "Samples~/Open Creator Rails"
-		}
-	]
+  "name": "io.chainsafe.open-creator-rails",
+  "displayName": "Open Creator Rails Unity",
+  "version": "1.0.0",
+  "unity": "6000.3",
+  "unityRelease": "8f1",
+  "description": "",
+  "dependencies": {
+    "com.unity.test-framework": "1.6.0",
+    "com.cysharp.unitask": "2.5.10",
+    "com.nethereum.unity": "6.1.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  },
+  "author": {
+    "name": "ChainSafe",
+    "url": "https://chainsafe.io/"
+  },
+  "licensesUrl": "https://mit-license.org/",
+  "samples": [
+    {
+      "displayName": "Open Creator Rails Sample",
+      "description": "Contains implementations for Common Operations using [Open Creator Rails](https://github.com/ChainSafe/open-creator-rails).",
+      "path": "Samples~/Open Creator Rails"
+    }
+  ]
 }
